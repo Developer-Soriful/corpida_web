@@ -1,13 +1,12 @@
-import React from 'react';
 import logo from '../../assets/Online learning-amico.png'
 import logo1 from '../../assets/Frame.png'
 const HeroSection = () => {
     return (
-        <section className=" mt-20 px-20">
-            <div className="  px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+        <section className="mt-10 px-4 lg:px-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
 
                 <div>
-                    <p className="flex items-center bg-[#00000014] text-purple-600  text-sm mb-2 px-4 py-2 rounded-md w-full max-w-sm">
+                    <p className="flex items-center bg-[#00000014] text-purple-600  text-sm mb-2 rounded-md w-full max-w-sm">
                         <img src={logo1} alt="Logo" className="mr-2 w-4 h-4" />
                         Now offering live courses & private tutoring
                     </p>

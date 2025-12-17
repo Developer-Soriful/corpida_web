@@ -1,4 +1,3 @@
-import React from 'react';
 import logo from "../../assets/Frame1.png"
 import logo2 from "../../assets/Frame2.png"
 import logo3 from "../../assets/Frame3.png"
@@ -13,11 +12,11 @@ const ChoosePorfira = () => {
                 Our platform offers everything you need for a seamless and effective<br />
                 learning experience.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 px-20 place-items-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 px-4 lg:px-20 place-items-center">
 
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                    w-[450px] h-[250.54px] flex flex-col">
+                    w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo} alt="" className="w-6 h-6" />
@@ -36,7 +35,7 @@ const ChoosePorfira = () => {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                    w-[450px] h-[250.54px] flex flex-col">
+                    w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo2} alt="" className="w-6 h-6" />
@@ -51,7 +50,7 @@ const ChoosePorfira = () => {
                 </div>
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                     w-[450px] h-[250.54px] flex flex-col">
+                     w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo3} alt="" className="w-6 h-6" />
@@ -67,7 +66,7 @@ const ChoosePorfira = () => {
 
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                    w-[450px] h-[250.54px] flex flex-col">
+                    w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo4} alt="" className="w-6 h-6" />
@@ -83,7 +82,7 @@ const ChoosePorfira = () => {
 
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                     w-[450px] h-[250.54px] flex flex-col">
+                     w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo5} alt="" className="w-6 h-6" />
@@ -99,7 +98,7 @@ const ChoosePorfira = () => {
 
                 <div className="bg-white p-6 rounded-2xl border border-[#EDEDED] shadow-sm 
                     text-left hover:shadow-md transition
-                     w-[450px] h-[250.54px] flex flex-col">
+                     w-full h-full flex flex-col">
 
                     <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#F3F8F4]">
                         <img src={logo6} alt="" className="w-6 h-6" />

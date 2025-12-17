@@ -10,21 +10,21 @@ import logo7 from "../../assets/location (13) 1.png";
 
 const Footer = () => {
     return (
-        <div className="mt-20 px-20">
-            <div className="bg-gradient-to-r from-[#FFD142D9] via-[#8113B5] to-[#8113B5] text-white py-12 rounded-2xl">
+        <div className="py-4 lg:py-20 px-4 lg:px-20">
+            <div className="bg-gradient-to-r from-[#FFD142D9] via-[#8113B5] to-[#8113B5] text-white py-4 lg:py-12 rounded-2xl w-full px-4 lg:px-20">
 
-                <div className=" px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className=" grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
 
-                
-                    <div className=" flex flex-col items-center">
 
-                      
-                        <div className="flex justify-center mb-4">
-                            <img src={logo4} className="w-[100px]" />
+                    <div className=" flex flex-col items-center md:items-start w-full">
+
+
+                        <div className="flex justify-center md:justify-start mb-4">
+                            <img src={logo4} />
                         </div>
 
-                        
-                        <div className="flex justify-center gap-5">
+
+                        <div className="flex w-full justify-center md:justify-start gap-5">
                             <img src={logo} className="w-10 h-10 rounded-full" />
                             <img src={logo1} className="w-10 h-10 rounded-full" />
                             <img src={logo2} className="w-10 h-10 rounded-full" />
@@ -32,8 +32,8 @@ const Footer = () => {
                         </div>
                     </div>
 
-           
-                    <div>
+
+                    <div className="text-center md:text-left">
                         <ul className="space-y-2">
                             <li><a href="#home" className="text-lg text-[#EBEBEB]">Home</a></li>
                             <li><a href="#about-us" className="text-lg text-[#EBEBEB]">How It Works</a></li>
@@ -42,8 +42,8 @@ const Footer = () => {
                         </ul>
                     </div>
 
-          
-                    <div>
+
+                    <div className="text-center md:text-left">
                         <ul className="space-y-2">
                             <li><a href="#faq" className="text-lg text-[#EBEBEB]">FAQ</a></li>
                             <li><a href="#contact" className="text-lg text-[#EBEBEB]">Contact</a></li>
@@ -53,8 +53,8 @@ const Footer = () => {
                         </ul>
                     </div>
 
-               
-                    <div>
+
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h3 className="text-2xl text-[#FFFFFF] font-normal mb-3">Contact Us</h3>
                         <ul className="space-y-3">
 
@@ -78,10 +78,10 @@ const Footer = () => {
 
 
                 </div>
-              <div className="w-full h-px bg-white/30 mt-2"></div>
-         
+                <div className="w-full h-px bg-white/30 mt-2"></div>
+
                 <div className="text-center text-sm mt-3">
-              
+
                     <p>© 2025 | FINANCIAL. All Rights Reserved</p>
                 </div>
 
