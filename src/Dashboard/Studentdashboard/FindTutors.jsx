@@ -25,7 +25,7 @@ const FindTutors = () => {
   // Temp filters for the drawer (capped at 100 for UI slider)
   const [tempFilters, setTempFilters] = useState({
     minPrice: 0,
-    maxPrice: 100,
+    maxPrice: 10000,
     subjects: [],
     rating: 0
   });
@@ -206,7 +206,7 @@ const FindTutors = () => {
               onClick={() => {
                 setSearchTerm("");
                 setActiveFilters({ minPrice: 0, maxPrice: 10000, subjects: [], rating: 0 });
-                setTempFilters({ minPrice: 0, maxPrice: 100, subjects: [], rating: 0 });
+                setTempFilters({ minPrice: 0, maxPrice: 1000, subjects: [], rating: 0 });
               }}
               className="mt-6 px-6 py-2 bg-[#6657E2] text-white rounded-xl text-sm font-medium"
             >
@@ -288,7 +288,7 @@ const FindTutors = () => {
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <button
             onClick={() => {
-              setTempFilters({ minPrice: 0, maxPrice: 100, subjects: [], rating: 0 });
+              setTempFilters({ minPrice: 0, maxPrice: 10000, subjects: [], rating: 0 });
             }}
             className="text-[#6657E2] font-semibold text-sm hover:underline"
           >
@@ -320,8 +320,8 @@ const FindTutors = () => {
               <div
                 className="absolute h-[3px] bg-[#8113B5]"
                 style={{
-                  left: `${(tempFilters.minPrice - 5) / 95 * 100}%`,
-                  width: `${(tempFilters.maxPrice - tempFilters.minPrice) / 95 * 100}%`
+                  left: `${(tempFilters.minPrice - 5) / 95 * 10000}%`,
+                  width: `${(tempFilters.maxPrice - tempFilters.minPrice) / 95 * 10000}%`
                 }}
               />
 
@@ -329,7 +329,7 @@ const FindTutors = () => {
               <input
                 type="range"
                 min="5"
-                max="100"
+                max="10000"
                 value={tempFilters.minPrice}
                 onChange={(e) => handlePriceChange(e, 'min')}
                 className="absolute w-full appearance-none bg-transparent pointer-events-none custom-range-slider p-0 m-0 z-20"
@@ -339,7 +339,7 @@ const FindTutors = () => {
               <input
                 type="range"
                 min="5"
-                max="100"
+                max="10000"
                 value={tempFilters.maxPrice}
                 onChange={(e) => handlePriceChange(e, 'max')}
                 className="absolute w-full appearance-none bg-transparent pointer-events-none custom-range-slider p-0 m-0 z-20"
@@ -348,7 +348,7 @@ const FindTutors = () => {
 
             <div className="flex justify-between text-[14px] text-gray-800 font-bold px-1 mt-1 mb-8">
               <span>$5</span>
-              <span>$100</span>
+              <span>$10000</span>
             </div>
 
             <style>{`
