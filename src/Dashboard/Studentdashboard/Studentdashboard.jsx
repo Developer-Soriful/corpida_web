@@ -88,11 +88,11 @@ const Studentdashboard = () => {
     }
     console.log(dashboardData)
     return (
-        <div className="w-full min-h-screen flex ">
+        <div className="w-full h-screen flex overflow-hidden">
 
             {/* ================= SIDEBAR ================= */}
-            <div className="px-10 py-5">
-                <div className="w-[290px]  h-[880px] bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl">
+            <div className="px-10 py-5 h-full overflow-y-auto shrink-0 custom-scrollbar">
+                <div className="w-[290px] min-h-full bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl">
 
                     {/* Logo Center */}
                     <div className="flex justify-center mb-2">
@@ -420,7 +420,7 @@ const Studentdashboard = () => {
 
 
             {/* ================= MAIN CONTENT ================= */}
-            <div className="flex-1 p-8">
+            <div className="flex-1 p-8 h-full overflow-y-auto custom-scrollbar">
 
                 {/* TOPBAR always visible */}
                 <div className="">

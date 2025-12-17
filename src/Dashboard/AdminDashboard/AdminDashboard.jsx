@@ -60,11 +60,11 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="w-full min-h-screen flex bg-gray-50">
+        <div className="w-full h-screen flex overflow-hidden bg-gray-50">
 
             {/* ================= SIDEBAR ================= */}
-            <div className="px-6 py-5 sticky top-0 h-screen overflow-y-auto">
-                <div className="w-[280px] h-full bg-linear-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl flex flex-col">
+            <div className="px-6 py-5 h-full overflow-y-auto shrink-0 custom-scrollbar">
+                <div className="w-[280px] min-h-full bg-linear-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl flex flex-col">
 
                     {/* Logo Center */}
                     <div className="flex justify-center mb-8">
@@ -126,7 +126,7 @@ const AdminDashboard = () => {
                                         className={`${isActive ? "text-transparent" : "text-white"}`}
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
                                     />
-                                    <span className={isActive ? "bg-gradient-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
                                         Notifications
                                     </span>
                                 </li>
@@ -150,12 +150,12 @@ const AdminDashboard = () => {
 
 
             {/* ================= MAIN CONTENT ================= */}
-            <div className="flex-1 p-8 overflow-y-auto h-screen">
+            <div className="flex-1 p-8 h-full overflow-y-auto custom-scrollbar">
 
                 {/* TOPBAR */}
                 <div className="w-full bg-[#FFFFFF] shadow-md py-3 px-6 flex justify-between items-center rounded-2xl mb-6">
                     <div>
-                        <h2 className="text-[20px] font-semibold bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5] text-transparent bg-clip-text">
+                        <h2 className="text-[20px] font-semibold bg-linear-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5] text-transparent bg-clip-text">
                             Admin Portal
                         </h2>
                         <p className="text-[#606060] text-[13px]">Manage platform operations.</p>
