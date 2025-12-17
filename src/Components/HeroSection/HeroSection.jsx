@@ -33,9 +33,9 @@ const HeroSection = () => {
                         </button>
                     </div>
 
-                    <div className="flex   gap-20 mt-10 
+                    <div className="flex gap-4 lg:gap-20 mt-10 
                 bg-gradient-to-r from-[#6657E2]  to-[#903CD1] 
-                px-15 py-4 rounded-xl shadow-lg w-fit ">
+                justify-between items-center py-4 px-4 rounded-xl shadow-lg w-full md:w-fit ">
 
                         <div className="text-center">
                             <h3 className="text-xl  text-white">500+</h3>

@@ -195,7 +195,7 @@ function TicketChat({ ticket: initialTicket, onBack }) {
         const optimisticMsg = {
             _id: tempId,
             content: content,
-            isAdminMessage: true, // I am Admin
+            isAdminMessage: true,
             sender: { name: "Admin" },
             createdAt: new Date().toISOString(),
             isOptimistic: true
@@ -206,12 +206,13 @@ function TicketChat({ ticket: initialTicket, onBack }) {
         setSending(true);
 
         try {
-            const res = await api.post(`/support/tickets/${ticket._id}/messages`, { content });
-            // Admin response might be wrapped differently or same, assuming standard response
-            const realMsg = res.response?.data?.data || res.data?.data || res.data;
+            socket.emit('send-support-message', {
+                ticketId: ticket._id,
+                content
+            });
 
-            // 2. Replace optimistic with real
-            setMessages(prev => prev.map(m => m._id === tempId ? realMsg : m));
+            // Note: The optimistic message will be replaced by the real one 
+            // via the 'new-support-message' event listener in useEffect.
         } catch (error) {
             console.error("Admin send failed", error);
             toast.error("Failed to send message.");

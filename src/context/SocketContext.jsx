@@ -11,7 +11,7 @@ export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState(new Set()); // Using Set for unique IDs
 
-    const BACKEND_URL = 'http://localhost:5000'; // Fallback
+    const BACKEND_URL = import.meta.env.VITE_API_SOCKET_URL;
 
     useEffect(() => {
         const token = localStorage.getItem('authToken');
@@ -63,7 +63,7 @@ export const SocketProvider = ({ children }) => {
         }
     }, []); // Dependency on token if needed, but usually mount is enough
 
-    
+
     return (
         <SocketContext.Provider value={{ socket, onlineUsers: Array.from(onlineUsers) }}>
             {children}
