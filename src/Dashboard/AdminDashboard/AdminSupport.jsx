@@ -22,7 +22,8 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function AdminSupport() {
-    const { socket } = useSocket();
+    const { socket, onlineUsers } = useSocket();
+    const isOnline = (id) => onlineUsers?.includes(id);
     const [view, setView] = useState('list'); // 'list', 'chat'
     const [tickets, setTickets] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
@@ -80,12 +81,13 @@ export default function AdminSupport() {
     return (
         <div className="h-[calc(100vh-140px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             {view === 'list' ? (
-                <TicketList tickets={tickets} onOpen={handleOpenTicket} logOut={logOut} />
+                <TicketList tickets={tickets} onOpen={handleOpenTicket} logOut={logOut} isOnline={isOnline} />
             ) : (
                 <TicketChat
                     ticket={selectedTicket}
                     onBack={() => setView('list')}
                     logOut={logOut}
+                    isOnline={isOnline}
                 />
             )}
         </div>
@@ -94,7 +96,7 @@ export default function AdminSupport() {
 
 // --- Sub-Components ---
 
-function TicketList({ tickets, onOpen, logOut }) {
+function TicketList({ tickets, onOpen, logOut, isOnline }) {
 
     if (tickets.length === 0) {
         return (
@@ -168,7 +170,7 @@ function TicketList({ tickets, onOpen, logOut }) {
                                     className="w-10 h-10 rounded-full object-cover border border-gray-200"
                                     alt=""
                                 />
-                                {ticket.user?.isOnline && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>}
+                                {isOnline(ticket.user?._id || ticket.user?.id) && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>}
                             </div>
 
                             <div>
@@ -196,7 +198,7 @@ function TicketList({ tickets, onOpen, logOut }) {
     );
 }
 
-function TicketChat({ ticket: initialTicket, onBack }) {
+function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
     const { socket } = useSocket();
     const [ticket, setTicket] = useState(initialTicket);
     const [messages, setMessages] = useState([]);
@@ -337,7 +339,10 @@ function TicketChat({ ticket: initialTicket, onBack }) {
                     <div>
                         <h3 className="font-bold text-gray-800 text-sm">{ticket.user?.name || "Unknown User"}</h3>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">{ticket.user?.email}</span>
+                            <div className="flex items-center gap-1">
+                                <span className={`w-2 h-2 rounded-full ${isOnline(ticket.user?._id || ticket.user?.id) ? "bg-green-500" : "bg-gray-300"}`}></span>
+                                <span className="text-xs text-gray-500">{isOnline(ticket.user?._id || ticket.user?.id) ? "Online" : "Offline"}</span>
+                            </div>
                             <span className="text-gray-300">•</span>
                             <StatusBadge status={ticket.status} />
                         </div>

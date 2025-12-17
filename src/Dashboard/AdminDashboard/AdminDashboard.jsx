@@ -1,11 +1,29 @@
 import { Link, NavLink, Outlet, useLocation } from "react-router";
-import { FiHome, FiHelpCircle, FiLogOut } from "react-icons/fi";
+import { FiHome, FiHelpCircle, FiLogOut, FiBell } from "react-icons/fi";
 import { useAuth } from "../../context/UseAuth";
 import logo from '../../assets/image.png'
 import { toast } from 'react-toastify';
+import { useEffect, useState } from "react";
+import api from "../../services/api";
 
 const AdminDashboard = () => {
     const { user, logOut } = useAuth()
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await api.get("/notification?limit=100");
+            const data = res.response?.data?.docs || res.data?.docs || [];
+            setUnreadCount(data.length);
+        } catch (error) {
+            console.error("NOTIFICATION ERROR:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
     const { pathname } = useLocation();
 
     // this is for handle logout 
@@ -46,7 +64,7 @@ const AdminDashboard = () => {
 
             {/* ================= SIDEBAR ================= */}
             <div className="px-6 py-5 sticky top-0 h-screen overflow-y-auto">
-                <div className="w-[280px] h-full bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl flex flex-col">
+                <div className="w-[280px] h-full bg-linear-to-r from-[#6657E2] to-[#903CD1] text-white px-6 py-8 rounded-2xl flex flex-col">
 
                     {/* Logo Center */}
                     <div className="flex justify-center mb-8">
@@ -67,7 +85,7 @@ const AdminDashboard = () => {
                                         className={`${isActive ? "text-transparent" : "text-white"}`}
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
                                     />
-                                    <span className={isActive ? "bg-gradient-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
                                         Dashboard
                                     </span>
                                     {isActive && (
@@ -77,7 +95,7 @@ const AdminDashboard = () => {
                             )}
                         </NavLink>
 
-                        <NavLink to="/admin/support">
+                        <NavLink to="/admin/support" end>
                             {({ isActive }) => (
                                 <li
                                     className={`py-2.5 px-4 rounded-lg flex items-center space-x-3 transition 
@@ -89,8 +107,27 @@ const AdminDashboard = () => {
                                         className={`${isActive ? "text-transparent" : "text-white"}`}
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
                                     />
-                                    <span className={isActive ? "bg-gradient-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
                                         Support Tickets
+                                    </span>
+                                </li>
+                            )}
+                        </NavLink>
+
+                        <NavLink to="/admin/notification">
+                            {({ isActive }) => (
+                                <li
+                                    className={`py-2.5 px-4 rounded-lg flex items-center space-x-3 transition 
+                                    ${isActive ? "bg-white" : "hover:bg-white/10"}
+                                    `}
+                                >
+                                    <FiBell
+                                        size={18}
+                                        className={`${isActive ? "text-transparent" : "text-white"}`}
+                                        style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
+                                    />
+                                    <span className={isActive ? "bg-gradient-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                        Notifications
                                     </span>
                                 </li>
                             )}
@@ -125,6 +162,20 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="flex items-center space-x-5">
+                        <NavLink to="/admin/notification">
+                            <div className="relative cursor-pointer">
+                                <button className="bg-[#f3f4f6] p-2.5 rounded-full text-lg shadow-sm hover:bg-gray-200 transition-all">
+                                    🔔
+                                </button>
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 text-white text-[10px] px-1.5 py-px rounded-full 
+            bg-linear-to-r from-[#6A4BFF] to-[#A048E9]">
+                                        {unreadCount > 99 ? '99+' : unreadCount}
+                                    </span>
+                                )}
+                            </div>
+                        </NavLink>
+
                         <div className="flex items-center space-x-2">
                             <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold border border-purple-200">
                                 {user?.name?.charAt(0) || "A"}

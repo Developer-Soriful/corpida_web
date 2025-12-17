@@ -31,32 +31,28 @@ const Navbar = () => {
       {/* Desktop Navigation */}
       <ul className="hidden lg:flex space-x-6">
         <li>
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-black" : "text-gray-600 hover:text-black transition-colors"
-            }
+          <a
+            href="/#home"
+            className="text-gray-600 hover:text-black transition-colors"
           >
             Home
-          </NavLink>
+          </a>
         </li>
 
         <li>
-          <NavLink
-            to="/how-it-works"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-black" : "text-gray-600 hover:text-black transition-colors"
-            }
+          <a
+            href="/#work"
+            className="text-gray-600 hover:text-black transition-colors"
           >
             How It Works
-          </NavLink>
+          </a>
         </li>
 
         {/* Role-specific navigation */}
         {user?.role === 'student' && (
           <li>
             <NavLink
-              to="/find-tutors"
+              to="/dashboard/findtutors"
               className={({ isActive }) =>
                 isActive ? "font-semibold text-black" : "text-gray-600 hover:text-black transition-colors"
               }
@@ -67,14 +63,12 @@ const Navbar = () => {
         )}
 
         <li>
-          <NavLink
-            to="/student-review"
-            className={({ isActive }) =>
-              isActive ? "font-semibold text-black" : "text-gray-600 hover:text-black transition-colors"
-            }
+          <a
+            href="/#testimonial"
+            className="text-gray-600 hover:text-black transition-colors"
           >
             Student Review
-          </NavLink>
+          </a>
         </li>
       </ul>
 
@@ -120,26 +114,26 @@ const Navbar = () => {
         }`}>
         <ul className="flex flex-col items-center space-y-6 text-xl">
           <li>
-            <NavLink to="/" onClick={toggleMenu} className={({ isActive }) => isActive ? "font-bold text-[#8113B5]" : "text-gray-700"}>
+            <a href="/#home" onClick={toggleMenu} className="text-gray-700">
               Home
-            </NavLink>
+            </a>
           </li>
           <li>
-            <NavLink to="/how-it-works" onClick={toggleMenu} className={({ isActive }) => isActive ? "font-bold text-[#8113B5]" : "text-gray-700"}>
+            <a href="/#work" onClick={toggleMenu} className="text-gray-700">
               How It Works
-            </NavLink>
+            </a>
           </li>
           {user?.role === 'student' && (
             <li>
-              <NavLink to="/find-tutors" onClick={toggleMenu} className={({ isActive }) => isActive ? "font-bold text-[#8113B5]" : "text-gray-700"}>
+              <NavLink to="/dashboard/findtutors" onClick={toggleMenu} className={({ isActive }) => isActive ? "font-bold text-[#8113B5]" : "text-gray-700"}>
                 Find Tutors
               </NavLink>
             </li>
           )}
           <li>
-            <NavLink to="/student-review" onClick={toggleMenu} className={({ isActive }) => isActive ? "font-bold text-[#8113B5]" : "text-gray-700"}>
+            <a href="/#testimonial" onClick={toggleMenu} className="text-gray-700">
               Student Review
-            </NavLink>
+            </a>
           </li>
         </ul>
 

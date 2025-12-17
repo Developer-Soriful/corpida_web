@@ -21,19 +21,21 @@ const Learning = () => {
             <button
               className="w-full sm:w-auto px-6  py-3 rounded-full
               font-medium text-white cursor-pointer
-              bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]
+              bg-linear-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]
               shadow-md">
               Sign Up Now
             </button>
           </Link>
 
-          <button
-            className="w-full sm:w-auto px-6 py-3 rounded-full
-            font-medium text-white cursor-pointer
-            bg-gradient-to-r from-[#6657E2] via-[#8113B5] to-[#903CD1]
-            shadow-md">
-            Browse Tutors
-          </button>
+          <Link to="/dashboard/findtutors" className="w-full sm:w-auto">
+            <button
+              className="w-full sm:w-auto px-6 py-3 rounded-full
+              font-medium text-white cursor-pointer
+              bg-linear-to-r from-[#6657E2] via-[#8113B5] to-[#903CD1]
+              shadow-md">
+              Browse Tutors
+            </button>
+          </Link>
 
         </div>
       </div>

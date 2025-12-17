@@ -3,9 +3,12 @@ import logo1 from "../../assets/IMG_8.png";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import Spinner from "../../Components/Spinner";
+import { useSocket } from "../../context/SocketContext";
 
 export default function ToutorMyLessonsPage() {
+  const { onlineUsers } = useSocket();
   const [lessonData, setLessonData] = useState(null)
+  const isOnline = (id) => onlineUsers.includes(id);
 
   const LessonCard = ({ data }) => {
     // Handling cases where data might be missing or structure is different
@@ -45,7 +48,10 @@ export default function ToutorMyLessonsPage() {
 
         <div className="w-1/2">
           <div className="flex items-center w-full justify-between mb-3">
-            <h2 className="text-[16px] font-medium text-gray-800">{name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-[16px] font-medium text-gray-800">{name}</h2>
+              <span className={`w-2 h-2 rounded-full ${isOnline(data.student?._id || data.student?.id) ? "bg-green-500" : "bg-gray-300"}`}></span>
+            </div>
             <span
               className={`text-[11px] px-3 py-[2px] rounded-full whitespace-nowrap ${statusColor}`}
             >

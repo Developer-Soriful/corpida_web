@@ -18,9 +18,10 @@ const Studentdashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
     const { pathname } = useLocation();
+    const isDashboardHome = pathname === "/dashboard" || pathname === "/dashboard/";
+    const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
-
-    const isDashboardHome = pathname === "/dashboard";
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -34,7 +35,19 @@ const Studentdashboard = () => {
             }
         };
 
+        const fetchNotifications = async () => {
+            try {
+                const res = await api.get("/notification?limit=100");
+                const data = res.response?.data?.docs || res.data?.docs || [];
+                setNotifications(data);
+                setUnreadCount(data.length);
+            } catch (error) {
+                console.error("NOTIFICATION ERROR:", error);
+            }
+        };
+
         fetchDashboard();
+        fetchNotifications();
     }, []);
     if (loading) {
         return <Spinner text="Student Dashboard" />
@@ -427,11 +440,12 @@ const Studentdashboard = () => {
                                         🔔
                                     </button>
 
-                                    {/* Gradient Badge */}
-                                    <span className="absolute -top-1 -right-1 text-white text-[10px] px-1.5 py-[1px] rounded-full 
-            bg-gradient-to-r from-[#6A4BFF] to-[#A048E9]">
-                                        2
-                                    </span>
+                                    {unreadCount > 0 && (
+                                        <span className="absolute -top-1 -right-1 text-white text-[10px] px-1.5 py-[1px] rounded-full 
+                bg-gradient-to-r from-[#6A4BFF] to-[#A048E9]">
+                                            {unreadCount > 99 ? '99+' : unreadCount}
+                                        </span>
+                                    )}
                                 </div>
                             </NavLink>
 
@@ -440,7 +454,7 @@ const Studentdashboard = () => {
 
                             <div className="flex items-center space-x-2">
                                 <Link to='/dashboard/myprofile'>
-                                    <img src={user?.avatar} alt="user" className="w-9 h-9 rounded-full border" />
+                                    <img src={user?.avatar || "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMUAAACUCAMAAAAUNB2QAAAASFBMVEX6+vqPj4////+JiYmurq6MjIyDg4OGhobu7u739/eVlZX09PTMzMzx8fGbm5vr6+ve3t6mpqbY2NjBwcG4uLjS0tLl5eV8fHwPhmHxAAAEOElEQVR4nO2c3ZKjIBBGpREQRARR5/3fdDWZmc3OJv4QhXaKc5GLqZoqTjVNED9SFJlMJpPJZDKZTCZzBeCb1CMJZR56awc/M9iquKIJQKOdIX8xbqgvJgJyMFww9mDBmOCmKy7jAUXlGX80+DbhRDfX8IBKE/5E4Q5XwyU8OideOsyI0qYe4hogvaKLEoRQpVMPcxmQjj1riB/twUrMXQ7FaiE+Z5XBu+iCFNsk5lmVerCvgMZslZiq4WTq8T4F6nK9JR6q0ace8HP8HompxzXC1oCO7LRQIz6Nxm1viju0rFMP+j/0613HK/iArRjVvul0gxlkxQC/vHm6RjHk3qa4F0OhsoCArrgVw2LSABPQFnMxSkQW0ISVYtqIYLLQQW0xWyCaUrBrB/UI7RFZBLbF1BgOj0WjAiWmtTb12L+BMVSCEFVhKca0nQ0HzcYW9BsWaBYp0KHNPdFliyOBIVwC0Yz6Hd1twyXwrLRvfOsRhedY6nfsQMJ3gwzTblCHPHXPYHrYgzr4KSn10B+BwPammJ5Yg08PPhBNqJnfcJITfKqWetw/qHaemM9QbCecRRGw2FJspZiKsfvkXyA8+YduwzviR5hCtkDdAL+vGCjfiBWFLPdoYDpPewT2vBQTpcRpUUBrti5UwtVIJWaNlTzOF7zEHC+CqtyyoeI93krMgPRibcFlAufq9AhYs/jFwYhDc+yxwFQOQ195MGY03lDRP0A7eTxbdClzvr2GQzGHaUddEv5PhzDBVT+0FynEHYC6HXpD+RfU+K6Vl3K4AYWUdWuHQevOtrXEHBVc4+Jh+Uwmc2ngOJI5yKrzfXkEvbdNEgWQtmRc0GPgnPQJLjRA1bPQONHz3a4gPvazE4wbn013eUR+joV2RzB+OzRyhH73ceZGjZhvZcCf4jAT75H8pPk0Q120FReGN9Ira0RLt8j+8PXpG+EjSQS8qtgO7SO91Jja4rwZRctIjTFZnCZBmKuyxS6L82ZUtsBjEa27p5X2N1g0u15D7rToo21rg0If24j33R1+aWQdFu3aGHThmc01CRMtkADtae0d9VZof9aUYj7ewx4MJ02puAmX+qTvvbgh4bfujSwR9x6DPKUYsfPa0IXmgJfgsV8jw/Fng4THj0zVOwN261AT/xYDjAfPKUZTxBKge5n2CJJIdUNJBySBX0qoZJfFjtNgKuFPIHTkmA0VVSl/GQtadUSPc5f2phjU/ce7s4p9+OSpVBhfJ9M2OVCDIfgFhV5OCi5BCZoEHlTehbxwnf7HIfr9QYBKl2w1gvqjDEKVA577nzegsd7xzSKMC6dHhNlgKOpWG75uwsTHpNDWeCN4UNs58ygo+7/hpz9RKjh1fsQr8Mmcr2ms7p1RitwPGeZPpZQxZa+tvEyM8J4VkrIdrbVdN33YsZJXzUGiyD9lMplMJpPJZDKZzB7+AM4LNtVmj5i3AAAAAElFTkSuQmCC"} alt="user" className="w-9 h-9 rounded-full border" />
                                     <span className="font-medium text-[14px] text-[#585858]">{user?.name}</span>
                                 </Link>
                             </div>

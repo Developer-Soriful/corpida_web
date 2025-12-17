@@ -5,7 +5,7 @@ import Spinner from "../../Components/Spinner";
 import { toast } from "react-toastify";
 import { formatDistanceToNow } from 'date-fns';
 
-const ToutorNotification = () => {
+const AdminNotification = () => {
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -49,10 +49,10 @@ const ToutorNotification = () => {
     if (loading) return <Spinner text="Loading notifications..." />;
 
     return (
-        <div className="w-full min-h-screen bg-[#FFFFFF] p-8 rounded-2xl">
+        <div className="w-full min-h-screen bg-[#FFFFFF] p-8 rounded-2xl shadow-sm">
             <div className="flex justify-between items-center mb-5">
                 <h2 className="text-[22px] font-semibold bg-linear-to-r from-[#6657E2] via-[#903CD1] to-[#7e0dd4] text-transparent bg-clip-text">
-                    Notification
+                    Admin Notifications
                 </h2>
                 {notifications.length > 0 && (
                     <button
@@ -70,20 +70,20 @@ const ToutorNotification = () => {
                 {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                         <FiBell size={48} className="mb-4 opacity-20" />
-                        <p>No notifications found.</p>
+                        <p>No new notifications.</p>
                     </div>
                 ) : (
                     notifications.map((notification) => (
                         <div
                             key={notification._id}
-                            className="bg-white rounded p-4 flex gap-4 items-start shadow-[0px_2px_8px_rgba(0,0,0,0.06)] group relative"
+                            className="bg-white rounded p-4 flex gap-4 items-start shadow-[0px_2px_8px_rgba(0,0,0,0.06)] group relative border border-gray-50 hover:border-purple-100 transition-all"
                         >
                             <div className="w-7 h-7 flex items-center justify-center rounded-md bg-[#F8F4FF]">
                                 <FiBell className="text-[#9B72E9] text-[20px]" />
                             </div>
 
                             <div className="flex-1">
-                                <h3 className="font-semibold text-[#1F1D1D] text-[15px]">{notification.title || "Notification"}</h3>
+                                <h3 className="font-semibold text-[#1F1D1D] text-[15px]">{notification.title || "Admin Alert"}</h3>
                                 <p className="text-[#606060] text-[13px]">
                                     {notification.message}
                                 </p>
@@ -107,4 +107,4 @@ const ToutorNotification = () => {
     );
 };
 
-export default ToutorNotification;
+export default AdminNotification;

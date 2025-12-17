@@ -1,8 +1,9 @@
+import { Link } from 'react-router';
 import logo from '../../assets/Online learning-amico.png'
 import logo1 from '../../assets/Frame.png'
 const HeroSection = () => {
     return (
-        <section className="mt-10 px-4 lg:px-20">
+        <section id="home" className="mt-10 px-4 lg:px-20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
 
                 <div>
@@ -23,18 +24,22 @@ const HeroSection = () => {
                     </p>
 
                     <div className="flex space-x-4">
-                        <button className="bg-gradient-to-r from-[#FFC30B] via-[#8c22be] to-[#8113B5]  text-[#ffffff]  px-6 py-3 rounded-xl transition">
-                            Get Started Free
-                        </button>
+                        <Link to="/signup">
+                            <button className="bg-linear-to-r from-[#FFC30B] via-[#8c22be] to-[#8113B5]  text-[#ffffff]  px-6 py-3 rounded-xl transition cursor-pointer">
+                                Get Started Free
+                            </button>
+                        </Link>
 
 
-                        <button className="bg-gradient-to-r from-[#6657E2] via-[#8113B5]  to-[#903CD1] text-[#ffffff]  px-8 py- rounded-xl transition">
-                            Find Tutors
-                        </button>
+                        <Link to="/dashboard/findtutors">
+                            <button className="bg-linear-to-r from-[#6657E2] via-[#8113B5]  to-[#903CD1] text-[#ffffff]  px-8 py-3 rounded-xl transition cursor-pointer">
+                                Find Tutors
+                            </button>
+                        </Link>
                     </div>
 
                     <div className="flex gap-4 lg:gap-20 mt-10 
-                bg-gradient-to-r from-[#6657E2]  to-[#903CD1] 
+                bg-linear-to-r from-[#6657E2]  to-[#903CD1] 
                 justify-between items-center py-4 px-4 rounded-xl shadow-lg w-full md:w-fit ">
 
                         <div className="text-center">

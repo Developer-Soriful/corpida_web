@@ -14,7 +14,6 @@ import Studentdashboard from "../Dashboard/Studentdashboard/Studentdashboard";
 import FindTutors from "../Dashboard/Studentdashboard/FindTutors";
 import Notification from "../Dashboard/Studentdashboard/Notification";
 import MyLessonsPage from "../Dashboard/Studentdashboard/MyLessonsPage";
-import FilterSidebar from "../Dashboard/Studentdashboard/FilterSidebar";
 import PaymentHistory from "../Dashboard/Studentdashboard/PaymentHistory";
 import Messages from "../Dashboard/Studentdashboard/Messages";
 import Support from "../Dashboard/Studentdashboard/Support";
@@ -38,6 +37,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import TutorProtectedRoute from "./TutorProtectedRoute";
 import AdminProtectedRoute from "./AdminProtectedRoute";
 import AdminSupport from "../Dashboard/AdminDashboard/AdminSupport";
+import AdminDashboard from "../Dashboard/AdminDashboard/AdminDashboard";
+import AdminNotification from "../Dashboard/AdminDashboard/AdminNotification";
 import ResetPasswordVerify from "../Authentication/ResetPasswordVerify";
 
 export const router = createBrowserRouter([
@@ -115,10 +116,6 @@ export const router = createBrowserRouter([
             {
                 path: 'myLessonspage',
                 Component: MyLessonsPage
-            },
-            {
-                path: 'filtersidebar',
-                Component: FilterSidebar
             },
             {
                 path: 'paymenthistory',
@@ -206,15 +203,17 @@ export const router = createBrowserRouter([
         path: '/admin',
         Component: () => (
             <AdminProtectedRoute>
-                <div className="min-h-screen bg-gray-50 p-6">
-                    <AdminSupport />
-                </div>
+                <AdminDashboard />
             </AdminProtectedRoute>
         ),
         children: [
             {
                 path: 'support',
                 Component: AdminSupport
+            },
+            {
+                path: 'notification',
+                Component: AdminNotification
             }
         ]
     }
