@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiMessageSquare, FiSend, FiArrowLeft, FiClock, FiCheckCircle, FiUser, FiSearch, FiMoreHorizontal } from "react-icons/fi";
+import { FiMessageSquare, FiSend, FiArrowLeft, FiSearch, FiMoreHorizontal } from "react-icons/fi";
 import api from "../../services/api";
 import { useSocket } from "../../context/SocketContext";
 import Spinner from '../../Components/Spinner';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../context/UseAuth';
 
 // --- Helper Components ---
 const StatusBadge = ({ status }) => {
@@ -26,7 +27,6 @@ export default function AdminSupport() {
     const [tickets, setTickets] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [loading, setLoading] = useState(true);
-
     // --- Data Fetching ---
     const fetchAllTickets = async () => {
         try {
@@ -76,15 +76,16 @@ export default function AdminSupport() {
     };
 
     if (loading && view === 'list') return <Spinner text="Loading Admin Support..." className="text-[#6657E2]" />;
-
+    const { logOut } = useAuth()
     return (
         <div className="h-[calc(100vh-140px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             {view === 'list' ? (
-                <TicketList tickets={tickets} onOpen={handleOpenTicket} />
+                <TicketList tickets={tickets} onOpen={handleOpenTicket} logOut={logOut} />
             ) : (
                 <TicketChat
                     ticket={selectedTicket}
                     onBack={() => setView('list')}
+                    logOut={logOut}
                 />
             )}
         </div>
@@ -93,7 +94,8 @@ export default function AdminSupport() {
 
 // --- Sub-Components ---
 
-function TicketList({ tickets, onOpen }) {
+function TicketList({ tickets, onOpen, logOut }) {
+
     if (tickets.length === 0) {
         return (
             <div className="h-full flex flex-col items-center justify-center text-gray-400">
@@ -103,8 +105,47 @@ function TicketList({ tickets, onOpen }) {
         );
     }
 
+
+    // this is for handle logout 
+    const handleLogout = () => {
+        const confirmToast = ({ closeToast }) => (
+            <div className="flex flex-col gap-3 p-1">
+                <p className="font-medium text-gray-800">Are you sure you want to log out?</p>
+                <div className="flex gap-2 justify-end">
+                    <button
+                        onClick={closeToast}
+                        className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => {
+                            logOut();
+                            closeToast();
+                        }}
+                        className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors shadow-sm"
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        );
+
+        toast.info(confirmToast, {
+            position: "top-center",
+            autoClose: false,
+            closeOnClick: false,
+            draggable: false,
+            closeButton: false,
+            className: 'border-l-4 border-[#6657E2]'
+        });
+    }
     return (
         <div className="flex flex-col h-full">
+            <div className='p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50'>
+                <h1 className="text-2xl font-bold text-[#6657E2] mb-6">Admin Dashboard</h1>
+                <button onClick={handleLogout} className="px-4 py-1.5 text-sm text-white bg-[#6657E2] rounded-lg hover:bg-[#5245D1] transition-colors">Logout</button>
+            </div>
             <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                 <h2 className="font-semibold text-gray-700">All Scoket Tickets</h2>
                 <div className="relative">

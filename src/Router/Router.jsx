@@ -207,7 +207,6 @@ export const router = createBrowserRouter([
         Component: () => (
             <AdminProtectedRoute>
                 <div className="min-h-screen bg-gray-50 p-6">
-                    <h1 className="text-2xl font-bold text-[#6657E2] mb-6">Admin Dashboard</h1>
                     <AdminSupport />
                 </div>
             </AdminProtectedRoute>
