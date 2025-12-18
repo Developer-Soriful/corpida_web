@@ -142,7 +142,7 @@ export const router = createBrowserRouter([
                 Component: TutorDetails
             },
             {
-                path: 'paymentul',
+                path: 'paymentul/:bookingId/:amount',
                 Component: PaymentUI
             },
             {

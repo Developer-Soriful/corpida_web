@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IoSearch } from "react-icons/io5";
 import { LuSettings2 } from "react-icons/lu";
 
@@ -9,6 +9,7 @@ import logo3 from "../../assets/award_star.png";
 import logo4 from "../../assets/payments.png";
 import logo5 from '../../assets/banner.png'
 import api from "../../services/api";
+import { toast } from "react-toastify";
 
 export default function TutorDetails() {
   const navigate = useNavigate()
@@ -27,8 +28,6 @@ export default function TutorDetails() {
     }
     tutorLoad();
   }, [])
-
-
   const reviews = [
     {
       id: 1,
@@ -61,7 +60,6 @@ export default function TutorDetails() {
         "Amazing teaching method! My speaking skills improved a lot within a month."
     }
   ];
-
   // this is for teacher review data 
   // useEffect(() => { 
   //   const tutorReviewLoad = async () => {
@@ -70,6 +68,64 @@ export default function TutorDetails() {
   //   }
   //   tutorReviewLoad();
   // }, [])
+
+  // this is for handle bookings 
+  const handleBooking = async () => {
+    // Check if tutor data is available
+    if (!tutor || !tutor.teacher) {
+      toast.error("Tutor data not loaded. Please try again.");
+      return;
+    }
+
+    try {
+      // Get the first subject from the tutor's subjects or use default
+      const subject = tutor.teacher.subjectsTaught?.[0] || "Mathematics";
+      
+      console.log("Booking with data:", {
+        teacherId: id,
+        subject: subject,
+        tutorData: tutor.teacher
+      });
+
+      // Call booking claim API first
+      const bookingResponse = await api.post('/booking/claim', {
+        teacherId: id, // Teacher ID from URL params
+        date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+        duration: 1, // 1 hour session
+        time: new Date().toISOString(), // Current time in ISO format
+        subject: subject // Use the determined subject
+      });
+
+      if (bookingResponse.status === 200) {
+        console.log("Booking response:", bookingResponse.data);
+        
+        // Check if response contains Stripe checkout URL
+        const stripeCheckoutUrl = bookingResponse.data?.response?.data || 
+                                  bookingResponse.data?.data;
+        
+        if (stripeCheckoutUrl && stripeCheckoutUrl.startsWith('https://checkout.stripe.com')) {
+          // Open Stripe checkout page in new external tab
+          window.open(stripeCheckoutUrl, '_blank');
+        } else {
+          // Fallback: Get booking ID and navigate to payment page
+          const createdBookingId = bookingResponse.data?.response?.data?.id || 
+                                  bookingResponse.data?.data?.id || 
+                                  bookingResponse.data?.id || 
+                                  id;
+          
+          console.log("Created booking ID:", createdBookingId);
+          const bookingAmount = tutor?.teacher?.hourlyRate || 50.00;
+          navigate(`/dashboard/paymentul/${createdBookingId}/${bookingAmount}`);
+        }
+      } else {
+        // Handle booking creation error
+        toast.error("Failed to create booking");
+      }
+    } catch (error) {
+      console.error("Booking claim error:", error);
+      toast.error("Failed to create booking");
+    }
+  }
   return (
     <div className="min-h-screen bg-[#F3F7F2] p-5">
 
@@ -97,7 +153,6 @@ export default function TutorDetails() {
           </Link>
         </div>
       </div>
-
       {/* MAIN CARD */}
       <div className="bg-white shadow-md rounded-2xl p-8 mt-10 max-w-4xl mx-auto">
 
@@ -245,17 +300,14 @@ export default function TutorDetails() {
             </div>
           ))}
         </div>
-
-        <Link to='/dashboard/paymentul'>
-          <button className="w-full mt-5 py-3 text-white font-medium rounded-lg 
+        <button onClick={handleBooking} className="w-full mt-5 py-3 text-white font-medium rounded-lg 
             bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]">
-            Book Now
-          </button>
-        </Link>
-          <button onClick={() =>handleMessageButton()} className="w-full cursor-pointer mt-5 py-3 text-white font-medium rounded-lg 
+          Book Now
+        </button>
+        <button onClick={() => handleMessageButton()} className="w-full cursor-pointer mt-5 py-3 text-white font-medium rounded-lg 
             bg-gradient-to-r from-[#6657E2] via-[#903CD1] to-[#903CD1]">
-            Massage
-          </button>
+          Massage
+        </button>
       </div>
     </div>
   );
