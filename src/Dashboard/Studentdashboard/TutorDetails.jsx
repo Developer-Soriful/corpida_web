@@ -71,61 +71,41 @@ export default function TutorDetails() {
 
   // this is for handle bookings 
   const handleBooking = async () => {
-    // Check if tutor data is available
     if (!tutor || !tutor.teacher) {
-      toast.error("Tutor data not loaded. Please try again.");
+      toast.error("Tutor data not loaded");
       return;
     }
 
     try {
-      // Get the first subject from the tutor's subjects or use default
       const subject = tutor.teacher.subjectsTaught?.[0] || "Mathematics";
-      
-      console.log("Booking with data:", {
+
+      const res = await api.post("/booking/claim", {
         teacherId: id,
-        subject: subject,
-        tutorData: tutor.teacher
+        date: new Date().toISOString().split("T")[0],
+        duration: 1,
+        time: new Date().toISOString(),
+        subject
       });
 
-      // Call booking claim API first
-      const bookingResponse = await api.post('/booking/claim', {
-        teacherId: id, // Teacher ID from URL params
-        date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
-        duration: 1, // 1 hour session
-        time: new Date().toISOString(), // Current time in ISO format
-        subject: subject // Use the determined subject
-      });
+      console.log("STRIPE RESPONSE 👉", res);
 
-      if (bookingResponse.status === 200) {
-        console.log("Booking response:", bookingResponse.data);
-        
-        // Check if response contains Stripe checkout URL
-        const stripeCheckoutUrl = bookingResponse.data?.response?.data || 
-                                  bookingResponse.data?.data;
-        
-        if (stripeCheckoutUrl && stripeCheckoutUrl.startsWith('https://checkout.stripe.com')) {
-          // Open Stripe checkout page in new external tab
-          window.open(stripeCheckoutUrl, '_blank');
-        } else {
-          // Fallback: Get booking ID and navigate to payment page
-          const createdBookingId = bookingResponse.data?.response?.data?.id || 
-                                  bookingResponse.data?.data?.id || 
-                                  bookingResponse.data?.id || 
-                                  id;
-          
-          console.log("Created booking ID:", createdBookingId);
-          const bookingAmount = tutor?.teacher?.hourlyRate || 50.00;
-          navigate(`/dashboard/paymentul/${createdBookingId}/${bookingAmount}`);
-        }
-      } else {
-        // Handle booking creation error
-        toast.error("Failed to create booking");
+      const stripeUrl = res?.response?.data;
+
+      if (!stripeUrl) {
+        toast.error("Stripe checkout URL not found");
+        return;
       }
+
+      // ✅ ONLY STRIPE REDIRECT
+      window.location.href = stripeUrl;
+
     } catch (error) {
-      console.error("Booking claim error:", error);
-      toast.error("Failed to create booking");
+      console.error(error);
+      toast.error("Booking failed");
     }
-  }
+  };
+
+
   return (
     <div className="min-h-screen bg-[#F3F7F2] p-5">
 
