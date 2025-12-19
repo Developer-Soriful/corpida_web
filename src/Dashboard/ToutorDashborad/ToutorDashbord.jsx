@@ -25,7 +25,7 @@ const ToutorDashbord = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     useEffect(() => {
         const fetchTutorData = async () => {
-            const res = await api.get("/dashboard/teacher")
+            const res = await api.get("/dashboard")
             setTutorData(res.response.data)
         }
         const fetchNotifications = async () => {

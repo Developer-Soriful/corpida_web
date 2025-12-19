@@ -86,7 +86,7 @@ export default function ToutorMyLessonsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const res = await api.get("/dashboard/teacher")
+        const res = await api.get("/dashboard")
         // Assuming response structure is similar: res.response.data.upcomingLessons 
         const upcomingLessons = res.response?.data?.upcomingLessons || res.data?.upcomingLessons || [];
         setLessonData(upcomingLessons)

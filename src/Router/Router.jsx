@@ -40,6 +40,7 @@ import AdminSupport from "../Dashboard/AdminDashboard/AdminSupport";
 import AdminDashboard from "../Dashboard/AdminDashboard/AdminDashboard";
 import AdminNotification from "../Dashboard/AdminDashboard/AdminNotification";
 import ResetPasswordVerify from "../Authentication/ResetPasswordVerify";
+import Earnings from "../Dashboard/AdminDashboard/Earnings";
 
 export const router = createBrowserRouter([
     {
@@ -214,6 +215,10 @@ export const router = createBrowserRouter([
             {
                 path: 'notification',
                 Component: AdminNotification
+            },
+            {
+                path: 'earnings',
+                Component: Earnings
             }
         ]
     }

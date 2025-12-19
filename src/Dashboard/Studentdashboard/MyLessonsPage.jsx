@@ -68,7 +68,7 @@ export default function MyLessonsPage() {
   // this is the lesson data from data bse 
   useEffect(() => {
     const loadData = async () => {
-      const res = await api.get("/dashboard/student")
+      const res = await api.get("/dashboard")
       setLessonData(res.response.data.upcomingLessons)
     }
     loadData()

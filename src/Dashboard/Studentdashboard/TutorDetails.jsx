@@ -15,6 +15,7 @@ export default function TutorDetails() {
   const navigate = useNavigate()
   const { id } = useParams();
   const [tutor, setTutor] = useState(null);
+  const [reviews, setReviews] = useState([])
   const tutorData = tutor
   // this is for tutor details api end point calling part 
   const handleMessageButton = () => {
@@ -28,47 +29,46 @@ export default function TutorDetails() {
     }
     tutorLoad();
   }, [])
-  const reviews = [
-    {
-      id: 1,
-      name: "Darrell Steward",
-      date: "12/05/25",
-      rating: 4.8,
-      total: 120,
-      img: "https://randomuser.me/api/portraits/men/32.jpg",
-      text:
-        "Ms. Sarah helped me prepare for my B math exams, I improved from a 4.0 to 6! Her techniques and practice sessions are very effective."
-    },
-    {
-      id: 2,
-      name: "Courtney Henry",
-      date: "10/11/25",
-      rating: 5.0,
-      total: 98,
-      img: "https://randomuser.me/api/portraits/women/44.jpg",
-      text:
-        "Highly professional tutor. She explains concepts clearly and provides great materials for practice."
-    },
-    {
-      id: 3,
-      name: "Wade Warren",
-      date: "01/02/26",
-      rating: 4.6,
-      total: 88,
-      img: "https://randomuser.me/api/portraits/men/75.jpg",
-      text:
-        "Amazing teaching method! My speaking skills improved a lot within a month."
-    }
-  ];
-  // this is for teacher review data 
-  // useEffect(() => { 
-  //   const tutorReviewLoad = async () => {
-  //     const res = await api.get(`/review/user`);
-  //     setTutor(res.response.data.docs)
+  // const reviews = [
+  //   {
+  //     id: 1,
+  //     name: "Darrell Steward",
+  //     date: "12/05/25",
+  //     rating: 4.8,
+  //     total: 120,
+  //     img: "https://randomuser.me/api/portraits/men/32.jpg",
+  //     text:
+  //       "Ms. Sarah helped me prepare for my B math exams, I improved from a 4.0 to 6! Her techniques and practice sessions are very effective."
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Courtney Henry",
+  //     date: "10/11/25",
+  //     rating: 5.0,
+  //     total: 98,
+  //     img: "https://randomuser.me/api/portraits/women/44.jpg",
+  //     text:
+  //       "Highly professional tutor. She explains concepts clearly and provides great materials for practice."
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Wade Warren",
+  //     date: "01/02/26",
+  //     rating: 4.6,
+  //     total: 88,
+  //     img: "https://randomuser.me/api/portraits/men/75.jpg",
+  //     text:
+  //       "Amazing teaching method! My speaking skills improved a lot within a month."
   //   }
-  //   tutorReviewLoad();
-  // }, [])
-
+  // ];
+  // this is for teacher review data 
+  useEffect(() => {
+    const tutorReviewLoad = async () => {
+      const res = await api.get(`/review/user`);
+      setReviews(res.response.data.docs)
+    }
+    tutorReviewLoad();
+  }, [])
   // this is for handle bookings 
   const handleBooking = async () => {
     if (!tutor || !tutor.teacher) {
@@ -77,7 +77,7 @@ export default function TutorDetails() {
     }
 
     try {
-      const subject = tutor.teacher.subjectsTaught?.[0] || "Mathematics";
+      const subject = tutor.teacher.subjectsTaught?.[0]
 
       const res = await api.post("/booking/claim", {
         teacherId: id,
@@ -105,6 +105,7 @@ export default function TutorDetails() {
     }
   };
 
+  console.log(tutorData)
 
   return (
     <div className="min-h-screen bg-[#F3F7F2] p-5">
@@ -200,12 +201,12 @@ export default function TutorDetails() {
               <span
                 key={item}
                 className="
-        px-3 py-1 text-sm rounded-full 
-        bg-[#EBEBEB]
-        border border-[#E3E3FF]
-        font-medium
-        bg-clip-text text-transparent
-        bg-linear-to-r from-[#6657E2] to-[#903CD1]
+                            px-3 py-1 text-sm rounded-full 
+                          bg-[#EBEBEB]
+                            border border-[#E3E3FF]
+                            font-medium
+                            bg-clip-text text-transparent
+                            bg-linear-to-r from-[#6657E2] to-[#903CD1]
       "
               >
                 {item}
@@ -254,7 +255,7 @@ export default function TutorDetails() {
         {/* Reviews */}
         <h3 className="mt-10 font-semibold text-[#7C7C7C]">Review</h3>
         <div className="mt-5 space-y-6">
-          {reviews.map((review) => (
+          {reviews.length > 0 ? reviews.map((review) => (
             <div key={review.id} className="flex items-start gap-3">
               <img src={review.img} className="w-10 h-10 rounded-full" />
 
@@ -278,7 +279,11 @@ export default function TutorDetails() {
                 </p>
               </div>
             </div>
-          ))}
+          )) : (
+            <div>
+              <p className="text-gray-400">Reviews not available</p>
+            </div>
+          )}
         </div>
         <button onClick={handleBooking} className="w-full mt-5 py-3 text-white font-medium rounded-lg 
             bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]">

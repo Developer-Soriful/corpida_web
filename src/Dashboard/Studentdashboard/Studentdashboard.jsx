@@ -26,7 +26,7 @@ const Studentdashboard = () => {
     useEffect(() => {
         const fetchDashboard = async () => {
             try {
-                const res = await api.get("/dashboard/student")
+                const res = await api.get("/dashboard")
                 setDashboardData(res.response.data)
             } catch (error) {
                 console.log("DASHBOARD ERROR:", error);
