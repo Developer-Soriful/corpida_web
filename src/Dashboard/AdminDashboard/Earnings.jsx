@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
 import SummaryCard from './SummaryCard';
+import ConfirmDeleteToast from './ConfirmDeleteToast';
 
 const debounce = (func, wait) => {
     let timeout;
@@ -141,15 +142,35 @@ const Earnings = () => {
         }
     };
 
-    const handleDeleteTransaction = async (transactionId) => {
-        try {
-            await api.delete(`/transaction/${transactionId}`);
-            setTransactions(transactions.filter(t => t.id !== transactionId));
-            toast.success('Transaction deleted successfully');
-        } catch (error) {
-            console.error('Error deleting transaction:', error);
-            toast.error('Failed to delete transaction');
-        }
+    const handleDeleteTransaction = (transactionId) => {
+        toast(
+            ({ closeToast }) => (
+                <ConfirmDeleteToast
+                    onConfirm={async () => {
+                        try {
+                            await api.delete(`/transaction/delete/${transactionId}`);
+
+                            setTransactions(prev =>
+                                prev.filter(t => t.id !== transactionId)
+                            );
+
+                            toast.success("Transaction deleted successfully");
+                            closeToast();
+                        } catch (error) {
+                            console.error("Error deleting transaction:", error);
+                            toast.error("Failed to delete transaction");
+                            closeToast();
+                        }
+                    }}
+                    onCancel={closeToast}
+                />
+            ),
+            {
+                autoClose: false,
+                closeOnClick: false,
+                closeButton: false,
+            }
+        );
     };
 
     // Debounced search to avoid excessive API calls

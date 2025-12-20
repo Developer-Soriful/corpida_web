@@ -1,7 +1,8 @@
 import { NavLink, Outlet, useLocation } from "react-router";
-import { FiHome, FiHelpCircle, FiLogOut, FiBell, FiEye, FiTrash2 } from "react-icons/fi";
-import { FaMoneyCheck } from "react-icons/fa";
+import { FiHome, FiHelpCircle, FiLogOut, FiBell, FiEye, FiTrash2, FiDownload, FiPrinter, FiX } from "react-icons/fi";
+import { FaChalkboardTeacher, FaMoneyCheck } from "react-icons/fa";
 import { PiStudentThin } from "react-icons/pi";
+import { IoSettingsOutline } from "react-icons/io5";
 import { useAuth } from "../../context/UseAuth";
 import logo from '../../assets/image.png'
 import { toast } from 'react-toastify';
@@ -11,6 +12,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { Bar } from 'react-chartjs-2';
 import { format } from 'date-fns';
 import SummaryCard from "./SummaryCard";
+import ConfirmDeleteToast from "./ConfirmDeleteToast";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -28,6 +30,11 @@ const AdminDashboard = () => {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Modal state for transaction details
+    const [showModal, setShowModal] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [loadingTransaction, setLoadingTransaction] = useState(false);
 
     // API Integration Functions
     const fetchSummaryData = async () => {
@@ -80,24 +87,49 @@ const AdminDashboard = () => {
     };
 
     const handleDeleteTransaction = async (transactionId) => {
-        try {
-            // API Call: DELETE /api/admin/transactions/${transactionId}
-            await api.delete(`/admin/transactions/${transactionId}`);
+        toast(
+            ({ closeToast }) => (
+                <ConfirmDeleteToast
+                    onConfirm={async () => {
+                        try {
+                            await api.delete(`/transaction/delete/${transactionId}`);
 
-            // Remove from local state
-            setTransactions(transactions.filter(t => t.id !== transactionId));
-            toast.success('Transaction deleted successfully');
-        } catch (error) {
-            console.error('Error deleting transaction:', error);
-            toast.error('Failed to delete transaction');
-        }
+                            setTransactions(prev =>
+                                prev.filter(t => t.id !== transactionId)
+                            );
+
+                            toast.success("Transaction deleted successfully");
+                            closeToast();
+                        } catch (error) {
+                            console.error("Error deleting transaction:", error);
+                            toast.error("Failed to delete transaction");
+                            closeToast();
+                        }
+                    }}
+                    onCancel={closeToast}
+                />
+            ),
+            {
+                autoClose: false,
+                closeOnClick: false,
+                closeButton: false,
+            }
+        );
     };
 
-    const handleViewTransaction = (transactionId) => {
-        // API Call: GET /api/admin/transactions/${transactionId}
-        // Navigate to transaction details or show modal
-        console.log('View transaction:', transactionId);
-        toast.info(`Viewing transaction ${transactionId}`);
+    const handleViewTransaction = async (transactionId) => {
+        try {
+            setLoadingTransaction(true);
+            const res = await api.get(`/transaction/${transactionId}`);
+            const transactionData = res.response?.data || res.data;
+            setSelectedTransaction(transactionData);
+            setShowModal(true);
+        } catch (error) {
+            console.error('Error fetching transaction details:', error);
+            toast.error('Failed to load transaction details');
+        } finally {
+            setLoadingTransaction(false);
+        }
     };
 
     const fetchNotifications = async () => {
@@ -221,6 +253,139 @@ const AdminDashboard = () => {
         );
     }
 
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedTransaction(null);
+    };
+
+    const handleDownload = () => {
+        if (!selectedTransaction) return;
+
+        const transactionData = {
+            'Transaction ID': selectedTransaction.transactionId || selectedTransaction._id,
+            'Date': format(new Date(selectedTransaction.createdAt), 'MM-dd-yyyy'),
+            'Student Name': selectedTransaction.performedBy?.name || 'N/A',
+            'A/C Number': '**** **** **** *545',
+            'A/C Holder Name': selectedTransaction.performedBy?.name || 'N/A',
+            'Transaction Amount': `$${selectedTransaction.amount}`,
+            'Tutor Name': selectedTransaction.receivedBy?.name || 'N/A'
+        };
+
+        const dataStr = JSON.stringify(transactionData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = `transaction_${selectedTransaction.transactionId || selectedTransaction._id}.json`;
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+
+        toast.success('Transaction details downloaded successfully');
+    };
+
+    const handlePrint = () => {
+        if (!selectedTransaction) return;
+
+        const printContent = `
+            <div style="padding: 20px; font-family: Arial, sans-serif;">
+                <h2 style="margin-bottom: 20px;">Transaction Details</h2>
+                <div style="margin-bottom: 10px;"><strong>Transaction ID:</strong> #${selectedTransaction.transactionId || selectedTransaction._id}</div>
+                <div style="margin-bottom: 10px;"><strong>Date:</strong> ${format(new Date(selectedTransaction.createdAt), 'MM-dd-yyyy')}</div>
+                <div style="margin-bottom: 10px;"><strong>Student name:</strong> ${selectedTransaction.performedBy?.name || 'N/A'}</div>
+                <div style="margin-bottom: 10px;"><strong>A/C number:</strong> **** **** **** *545</div>
+                <div style="margin-bottom: 10px;"><strong>A/C holder name:</strong> ${selectedTransaction.performedBy?.name || 'N/A'}</div>
+                <div style="margin-bottom: 10px;"><strong>Transaction amount:</strong> $${selectedTransaction.amount}</div>
+                <div style="margin-bottom: 10px;"><strong>Tutor name:</strong> ${selectedTransaction.receivedBy?.name || 'N/A'}</div>
+            </div>
+        `;
+
+        const printWindow = window.open('', '', 'width=600,height=600');
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        printWindow.print();
+
+        toast.success('Print dialog opened');
+    };
+
+    const TransactionDetailsModal = () => {
+        if (!showModal || !selectedTransaction) return null;
+
+        return (
+            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+                    <div className="bg-linear-to-r from-[#614EFE] to-[#7D359F] text-white p-6 rounded-t-xl">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-xl font-semibold">Transaction Details</h3>
+                            <button
+                                onClick={handleCloseModal}
+                                className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
+                            >
+                                <FiX size={20} />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="p-6">
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">Transaction ID:</span>
+                                <span className="font-medium text-gray-800">#{selectedTransaction.transactionId || selectedTransaction._id}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">Date:</span>
+                                <span className="font-medium text-gray-800">{format(new Date(selectedTransaction.createdAt), 'MM-dd-yyyy')}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">Student name:</span>
+                                <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">A/C number:</span>
+                                <span className="font-medium text-gray-800">**** **** **** *545</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">A/C holder name:</span>
+                                <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">Transaction amount:</span>
+                                <span className="font-medium text-green-600 text-lg">${selectedTransaction.amount}</span>
+                            </div>
+
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span className="text-gray-600 text-sm">Tutor name:</span>
+                                <span className="font-medium text-gray-800">{selectedTransaction.receivedBy?.name || 'N/A'}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex space-x-3 mt-6">
+                            <button
+                                onClick={handleDownload}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-linear-to-r from-[#614EFE] to-[#7D359F] text-white rounded-lg hover:opacity-90 transition-opacity"
+                            >
+                                <FiDownload size={16} />
+                                Download
+                            </button>
+                            <button
+                                onClick={handlePrint}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                <FiPrinter size={16} />
+                                Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="w-full h-screen flex overflow-hidden bg-gray-50">
 
@@ -294,7 +459,53 @@ const AdminDashboard = () => {
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
                                     />
                                     <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
-                                        Earnings
+                                        Students
+                                    </span>
+                                    {isActive && (
+                                        <svg className="absolute w-0 h-0 overflow-hidden"><defs><linearGradient id="menuGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#FFC30B" /><stop offset="100%" stopColor="#8113B5" /></linearGradient></defs></svg>
+                                    )}
+                                </li>
+                            )}
+                        </NavLink>
+                        <NavLink to="/admin/teacher" end>
+                            {({ isActive }) => (
+                                <li
+                                    className={`py-2.5 px-4 rounded-lg flex items-center space-x-3 transition 
+                                    ${isActive ? "bg-white" : "hover:bg-white/10"}
+                                    `}
+                                >
+                                    <FaChalkboardTeacher
+
+
+
+                                        size={18}
+                                        className={`${isActive ? "text-transparent" : "text-white"}`}
+                                        style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
+                                    />
+                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                        Teacher
+                                    </span>
+                                    {isActive && (
+                                        <svg className="absolute w-0 h-0 overflow-hidden"><defs><linearGradient id="menuGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#FFC30B" /><stop offset="100%" stopColor="#8113B5" /></linearGradient></defs></svg>
+                                    )}
+                                </li>
+                            )}
+                        </NavLink>
+                        <NavLink to="/admin/settings" end>
+                            {({ isActive }) => (
+                                <li
+                                    className={`py-2.5 px-4 rounded-lg flex items-center space-x-3 transition 
+                                    ${isActive ? "bg-white" : "hover:bg-white/10"}
+                                    `}
+                                >
+                                    <IoSettingsOutline
+
+                                        size={18}
+                                        className={`${isActive ? "text-transparent" : "text-white"}`}
+                                        style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
+                                    />
+                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
+                                        Settings
                                     </span>
                                     {isActive && (
                                         <svg className="absolute w-0 h-0 overflow-hidden"><defs><linearGradient id="menuGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#FFC30B" /><stop offset="100%" stopColor="#8113B5" /></linearGradient></defs></svg>
@@ -396,41 +607,7 @@ const AdminDashboard = () => {
                 {/* DASHBOARD HOME CONTENT (only if exactly at /admin) */}
                 {pathname === "/admin" && (
                     <div className="space-y-6">
-                        {/* Summary Cards */}
-                        {/* <div className="grid grid-cols-3 gap-6">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Total Earnings</p>
-                                        <p className="text-3xl text-[#8113b5] text-[32px] font-medium mt-2">
-                                            ${summaryData.totalEarnings.toFixed(2)} K
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Total Students</p>
-                                        <p className="text-3xl text-[#8113b5] text-[32px] font-medium mt-2">
-                                            {summaryData.totalStudents?.toLocaleString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Total Tutors</p>
-                                        <p className="text-3xl text-[#8113b5] text-[32px] font-medium mt-2">
-                                            {summaryData.totalTeachers?.toLocaleString()}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> */}
+                        {/* this is for summary card */}
                         <SummaryCard summaryData={summaryData} />
                         {/* Earnings Chart */}
                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -525,6 +702,19 @@ const AdminDashboard = () => {
 
                 {/* All other pages show here */}
                 <Outlet />
+
+                {/* Transaction Details Modal */}
+                <TransactionDetailsModal />
+
+                {/* Loading overlay for transaction details */}
+                {loadingTransaction && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
+                            <span className="text-gray-700">Loading transaction details...</span>
+                        </div>
+                    </div>
+                )}
 
             </div>
         </div>

@@ -41,6 +41,14 @@ import AdminDashboard from "../Dashboard/AdminDashboard/AdminDashboard";
 import AdminNotification from "../Dashboard/AdminDashboard/AdminNotification";
 import ResetPasswordVerify from "../Authentication/ResetPasswordVerify";
 import Earnings from "../Dashboard/AdminDashboard/Earnings";
+import Students from "../Dashboard/AdminDashboard/Students";
+import Teachers from "../Dashboard/AdminDashboard/Teachers";
+import Settings from "../Dashboard/AdminDashboard/settings/Settings";
+import PersonalInfo from "../Dashboard/AdminDashboard/settings/PersonalInfo";
+import ChangePassword from "../Dashboard/AdminDashboard/settings/ChangePassword";
+import TermsConditions from "../Dashboard/AdminDashboard/settings/TermsConditions";
+import PrivacyPolicy from "../Dashboard/AdminDashboard/settings/PrivacyPolicy";
+import FAQ from "../Dashboard/AdminDashboard/settings/FAQ";
 
 export const router = createBrowserRouter([
     {
@@ -219,7 +227,39 @@ export const router = createBrowserRouter([
             {
                 path: 'earnings',
                 Component: Earnings
-            }
+            },
+            {
+                path: 'students',
+                Component: Students
+            },
+            {
+                path: 'teacher',
+                Component: Teachers
+            },
+            {
+                path: 'settings',
+                Component: Settings,
+            },
+            {
+                path: 'personal',
+                Component: PersonalInfo
+            },
+            {
+                path: 'password',
+                Component: ChangePassword
+            },
+            {
+                path: 'terms',
+                Component: TermsConditions
+            },
+            {
+                path: 'privacy',
+                Component: PrivacyPolicy
+            },
+            {
+                path: 'faq',
+                Component: FAQ
+            },
         ]
     }
 ]);
