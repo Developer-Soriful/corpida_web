@@ -13,6 +13,8 @@ import { Bar } from 'react-chartjs-2';
 import { format } from 'date-fns';
 import SummaryCard from "./SummaryCard";
 import ConfirmDeleteToast from "./ConfirmDeleteToast";
+import { AiOutlineQuestionCircle } from "react-icons/ai";
+
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -49,7 +51,6 @@ const AdminDashboard = () => {
                 totalStudents: dashboardData.totalStudents || 0,
                 totalTeachers: dashboardData.totalTeachers || 0
             });
-
             // Set monthly earnings data for chart
             if (dashboardData.monthlyEarnings) {
                 const chartData = dashboardData.monthlyEarnings.map(item => ({
@@ -521,7 +522,8 @@ const AdminDashboard = () => {
                                     ${isActive ? "bg-white" : "hover:bg-white/10"}
                                     `}
                                 >
-                                    <FiHelpCircle
+                                    <AiOutlineQuestionCircle
+
                                         size={18}
                                         className={`${isActive ? "text-transparent" : "text-white"}`}
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
@@ -532,26 +534,6 @@ const AdminDashboard = () => {
                                 </li>
                             )}
                         </NavLink>
-
-                        <NavLink to="/admin/notification">
-                            {({ isActive }) => (
-                                <li
-                                    className={`py-2.5 px-4 rounded-lg flex items-center space-x-3 transition 
-                                    ${isActive ? "bg-white" : "hover:bg-white/10"}
-                                    `}
-                                >
-                                    <FiBell
-                                        size={18}
-                                        className={`${isActive ? "text-transparent" : "text-white"}`}
-                                        style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
-                                    />
-                                    <span className={isActive ? "bg-linear-to-r from-[#FFC30B] to-[#8113B5] text-transparent bg-clip-text font-medium" : "text-white"}>
-                                        Notifications
-                                    </span>
-                                </li>
-                            )}
-                        </NavLink>
-
                         {/* Placeholder for future admin links */}
                         {/* 
                          <NavLink to="/admin/users">

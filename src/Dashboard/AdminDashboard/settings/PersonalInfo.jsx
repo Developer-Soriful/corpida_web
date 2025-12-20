@@ -164,17 +164,22 @@ const PersonalInfo = () => {
       const response = await api.post('/user/create', payload, {
         headers: { 'Content-Type': 'application/json' }
       });
-      console.log('Admin creation response:', response);
-      toast.success('Admin created successfully!');
-      setShowAddAdminModal(false);
-      setNewAdmin({ name: '', email: '', password: '', role: 'admin', avatar: '', dateOfBirth: '' });
-      setNewAdminFile(null);
-      setNewAdminPreview(null);
+
+      // Check for both 200 and 201 as success
+      if (response.status === 200 || response.status === 201) {
+        toast.success(response.data?.message || 'Admin created successfully!');
+        setShowAddAdminModal(false);
+        setNewAdmin({ name: '', email: '', password: '', role: 'admin', avatar: '', dateOfBirth: '' });
+        setNewAdminFile(null);
+        setNewAdminPreview(null);
+      } else {
+        toast.error(response.data?.message || 'Failed to create admin');
+      }
     } catch (error) {
       console.error('Admin creation error:', error);
-      console.error('Error response data:', error.response?.data);
-      const errorMessage = error.response?.data || 'Failed to create admin';
-      toast.error(errorMessage);
+      // Robust error message extraction
+      const errorMessage = error.response?.data?.message || error.response?.data || error.message || 'Failed to create admin';
+      toast.error(typeof errorMessage === 'string' ? errorMessage : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }

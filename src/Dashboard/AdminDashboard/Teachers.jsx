@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiSearch, FiCheckCircle, FiAlertCircle, FiDownload, FiPrinter, FiX, FiTrash2 } from 'react-icons/fi';
+import { FiSearch, FiCheckCircle, FiAlertCircle, FiDownload, FiPrinter, FiX, FiTrash2, FiEye } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
@@ -265,7 +265,7 @@ const Teachers = () => {
                                                 }}
                                                 className="text-indigo-600 hover:text-indigo-900 hover:underline transition-colors cursor-pointer"
                                             >
-                                                <FiSearch size={24} />
+                                                <FiEye size={24} />
                                             </button>
                                             <button
                                                 onClick={() => {

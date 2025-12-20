@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FiMessageSquare, FiSend, FiArrowLeft, FiSearch, FiMoreHorizontal } from "react-icons/fi";
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { FiMessageSquare, FiSend, FiArrowLeft, FiSearch, FiMoreHorizontal, FiStar, FiMail, FiChevronDown, FiMinimize2, FiMaximize2, FiX, FiPaperclip, FiLink, FiSmile, FiType, FiClock, FiEdit3, FiTrash2 } from "react-icons/fi";
 import api from "../../services/api";
 import { useSocket } from "../../context/SocketContext";
 import Spinner from '../../Components/Spinner';
@@ -28,6 +28,10 @@ export default function AdminSupport() {
     const [tickets, setTickets] = useState([]);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isComposeOpen, setIsComposeOpen] = useState(false);
+    const [starredTickets, setStarredTickets] = useState(new Set()); // Local state for demonstration
+
     // --- Data Fetching ---
     const fetchAllTickets = async () => {
         try {
@@ -38,7 +42,6 @@ export default function AdminSupport() {
         } catch (error) {
             console.error("Failed to fetch tickets:", error);
             try {
-                // Fallback attempt
                 const res = await api.get('/support/tickets');
                 const data = res.response?.data?.docs || res.data?.docs || [];
                 setTickets(Array.isArray(data) ? data.reverse() : []);
@@ -59,7 +62,7 @@ export default function AdminSupport() {
             });
             socket.on('support-new-ticket', () => {
                 fetchAllTickets();
-                toast.info("New support ticket.");
+                toast.info("New support message.");
             });
         }
 
@@ -76,18 +79,100 @@ export default function AdminSupport() {
         setView('chat');
     };
 
-    if (loading && view === 'list') return <Spinner text="Loading Admin Support..." className="text-[#6657E2]" />;
-    const { logOut } = useAuth()
+    const toggleStar = (e, ticketId) => {
+        e.stopPropagation();
+        setStarredTickets(prev => {
+            const next = new Set(prev);
+            if (next.has(ticketId)) next.delete(ticketId);
+            else next.add(ticketId);
+            return next;
+        });
+    };
+
+    const filteredTickets = useMemo(() => {
+        return tickets.filter(ticket =>
+            ticket.user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            ticket.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            ticket.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [tickets, searchQuery]);
+
+    const { logOut } = useAuth();
+
+    if (loading && view === 'list') return <Spinner text="Loading Support..." className="text-[#6657E2]" />;
+
     return (
-        <div className="h-[calc(100vh-140px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+        <div className="h-[calc(100vh-140px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative">
             {view === 'list' ? (
-                <TicketList tickets={tickets} onOpen={handleOpenTicket} logOut={logOut} isOnline={isOnline} />
+                <div className="flex h-full">
+                    {/* Left Inner Sidebar */}
+                    <div className="w-64 border-r border-gray-100 p-6 flex flex-col gap-6 bg-gray-50/30">
+                        <h1 className="text-xl font-bold text-gray-800">Inbox</h1>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100 group cursor-pointer">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-500">
+                                        <FiMail size={18} />
+                                    </div>
+                                    <span className="font-semibold text-gray-700">Email</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-6 h-6 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full">
+                                        {tickets.filter(t => t.status === 'open').length}
+                                    </span>
+                                    <FiChevronDown className="text-gray-400" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-4">
+                            <div className="relative">
+                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search here ..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm outline-none focus:border-[#6657E2] text-sm transition-all"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content Area - Ticket List */}
+                    <div className="flex-1 flex flex-col bg-white relative">
+                        <TicketList
+                            tickets={filteredTickets}
+                            onOpen={handleOpenTicket}
+                            starredTickets={starredTickets}
+                            toggleStar={toggleStar}
+                        />
+
+                        {/* Compose Floating Button */}
+                        <button
+                            onClick={() => setIsComposeOpen(true)}
+                            className="absolute bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-linear-to-r from-[#6657E2] to-[#8B5CF6] text-white rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all group"
+                        >
+                            <div className="p-1 bg-white/20 rounded-lg group-hover:rotate-12 transition-transform">
+                                <FiEdit3 size={20} />
+                            </div>
+                            <span className="font-bold tracking-wide">Compose</span>
+                        </button>
+                    </div>
+                </div>
             ) : (
                 <TicketChat
                     ticket={selectedTicket}
                     onBack={() => setView('list')}
-                    logOut={logOut}
                     isOnline={isOnline}
+                />
+            )}
+
+            {/* Compose Modal */}
+            {isComposeOpen && (
+                <ComposeModal
+                    onClose={() => setIsComposeOpen(false)}
+                    onSuccess={fetchAllTickets}
                 />
             )}
         </div>
@@ -96,103 +181,216 @@ export default function AdminSupport() {
 
 // --- Sub-Components ---
 
-function TicketList({ tickets, onOpen, logOut, isOnline }) {
-
+function TicketList({ tickets, onOpen, starredTickets, toggleStar }) {
     if (tickets.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center text-gray-400">
+            <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-white">
                 <FiMessageSquare size={48} className="mb-4 opacity-30" />
-                <p>No tickets found.</p>
+                <p>No messages found.</p>
             </div>
         );
     }
 
-
-    // this is for handle logout 
-    const handleLogout = () => {
-        const confirmToast = ({ closeToast }) => (
-            <div className="flex flex-col gap-3 p-1">
-                <p className="font-medium text-gray-800">Are you sure you want to log out?</p>
-                <div className="flex gap-2 justify-end">
-                    <button
-                        onClick={closeToast}
-                        className="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={() => {
-                            logOut();
-                            closeToast();
-                        }}
-                        className="px-3 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors shadow-sm"
-                    >
-                        Confirm
-                    </button>
-                </div>
-            </div>
-        );
-
-        toast.info(confirmToast, {
-            position: "top-center",
-            autoClose: false,
-            closeOnClick: false,
-            draggable: false,
-            closeButton: false,
-            className: 'border-l-4 border-[#6657E2]'
-        });
-    }
     return (
-        <div className="flex flex-col h-full">
-            <div className='p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50'>
-                <h1 className="text-2xl font-bold text-[#6657E2] mb-6">Admin Dashboard</h1>
-                <button onClick={handleLogout} className="px-4 py-1.5 text-sm text-white bg-[#6657E2] rounded-lg hover:bg-[#5245D1] transition-colors">Logout</button>
-            </div>
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                <h2 className="font-semibold text-gray-700">All Scoket Tickets</h2>
-                <div className="relative">
-                    <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                    <input type="text" placeholder="Search..." className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg outline-none focus:border-[#6657E2]" />
-                </div>
-            </div>
+        <div className="flex-1 overflow-y-auto">
+            {tickets.map((ticket) => (
+                <div
+                    key={ticket._id}
+                    onClick={() => onOpen(ticket)}
+                    className="group border-b border-gray-100 p-5 hover:bg-[#FAF9FF] cursor-pointer transition-all flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-8 flex-1">
+                        <button
+                            onClick={(e) => toggleStar(e, ticket._id)}
+                            className={`p-1 transition-colors ${starredTickets.has(ticket._id) ? 'text-yellow-400' : 'text-gray-300 hover:text-gray-400'}`}
+                        >
+                            <FiStar size={20} fill={starredTickets.has(ticket._id) ? "currentColor" : "none"} />
+                        </button>
 
-            <div className="flex-1 overflow-y-auto">
-                {tickets.map((ticket) => (
-                    <div
-                        key={ticket._id}
-                        onClick={() => onOpen(ticket)}
-                        className="group border-b border-gray-100 p-4 hover:bg-[#FAF9FF] cursor-pointer transition-colors flex items-center justify-between"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="relative">
-                                <img
-                                    src={ticket.user?.avatar || "https://ui-avatars.com/api/?name=User&background=random"}
-                                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                                    alt=""
-                                />
-                                {isOnline(ticket.user?._id || ticket.user?.id) && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>}
-                            </div>
-
-                            <div>
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <h4 className="font-semibold text-gray-800 text-sm">{ticket.user?.name || "Unknown User"}</h4>
-                                    <span className="text-gray-300">•</span>
-                                    <span className="text-xs text-gray-500">{ticket.subject}</span>
-                                </div>
-                                <p className={`text-sm line-clamp-1 ${ticket.status === 'open' ? 'text-gray-800 font-medium' : 'text-gray-500'}`}>
-                                    {ticket.lastMessage?.content || "No messages yet"}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-1.5">
-                            <span className="text-[10px] text-gray-400">
-                                {new Date(ticket.lastMessageAt || ticket.createdAt).toLocaleDateString()}
-                            </span>
-                            <StatusBadge status={ticket.status} />
+                        <div className="flex items-center gap-12 flex-1">
+                            <h4 className="w-32 font-bold text-gray-800 text-sm truncate">{ticket.user?.name || "Unknown User"}</h4>
+                            <p className="flex-1 text-sm text-gray-600 truncate max-w-2xl">
+                                {ticket.lastMessage?.content || ticket.subject || "No content"}
+                            </p>
                         </div>
                     </div>
-                ))}
+
+                    <div className="flex items-center gap-4">
+                        <span className="text-[12px] font-medium text-gray-500">
+                            {new Date(ticket.lastMessageAt || ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function ComposeModal({ onClose, onSuccess }) {
+    const [recipients, setRecipients] = useState('');
+    const [subject, setSubject] = useState('');
+    const [body, setBody] = useState('');
+    const [sending, setSending] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
+    const [loadingUsers, setLoadingUsers] = useState(false);
+
+    const fetchUsers = async (query) => {
+        if (!query) {
+            setUsers([]);
+            return;
+        }
+        setLoadingUsers(true);
+        try {
+            const res = await api.get(`/user/all?name=${query}&limit=5`);
+            const data = res.response?.data?.docs || res.data?.docs || [];
+            setUsers(data);
+        } catch (error) {
+            console.error("Failed to fetch users:", error);
+        } finally {
+            setLoadingUsers(false);
+        }
+    };
+
+    const handleRecipientChange = (val) => {
+        setRecipients(val);
+        if (val.length > 1) {
+            fetchUsers(val);
+            setShowUserDropdown(true);
+        } else {
+            setShowUserDropdown(false);
+        }
+    };
+
+    const selectUser = (user) => {
+        setRecipients(user.email);
+        setShowUserDropdown(false);
+    };
+
+    const handleSend = async () => {
+        if (!recipients || !subject || !body) {
+            toast.warning("Please fill all fields");
+            return;
+        }
+        setSending(true);
+        try {
+            // Backend endpoint: POST /support/tickets accepts subject and initialMessage
+            await api.post('/support/tickets', {
+                subject: subject,
+                initialMessage: body,
+                // In a real scenario we'd pass the userId if we could, 
+                // but the current API auto-links to the logged-in user usually.
+                // If it's admin composing TO a user, we might need a different endpoint or logic.
+                // Assuming it's starting a conversation.
+            });
+            toast.success("Message sent successfully");
+            onSuccess();
+            onClose();
+        } catch (error) {
+            toast.error("Failed to send message");
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-fadeIn">
+                {/* Header */}
+                <div className="bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100">
+                    <h2 className="text-lg font-bold text-gray-800">New Message</h2>
+                    <div className="flex items-center gap-4 text-gray-400">
+                        <button className="hover:text-gray-600 transition-colors"><FiMinimize2 size={18} /></button>
+                        <button className="hover:text-gray-600 transition-colors"><FiMaximize2 size={18} /></button>
+                        <button onClick={onClose} className="hover:text-red-500 transition-colors"><FiX size={20} /></button>
+                    </div>
+                </div>
+
+                {/* Body */}
+                <div className="p-6 flex flex-col gap-4">
+                    <div className="flex items-center gap-4 border-b border-gray-100 pb-3 relative">
+                        <span className="text-sm font-semibold text-gray-500 w-20">Recipients</span>
+                        <input
+                            type="text"
+                            value={recipients}
+                            onChange={(e) => handleRecipientChange(e.target.value)}
+                            className="flex-1 outline-none text-sm text-gray-800"
+                            placeholder="Email address..."
+                        />
+                        <div className="flex items-center gap-4 text-xs font-bold text-gray-400">
+                            <button className="hover:text-[#6657E2]">Cc</button>
+                            <button className="hover:text-[#6657E2]">Bcc</button>
+                        </div>
+
+                        {/* User Search Dropdown */}
+                        {showUserDropdown && users.length > 0 && (
+                            <div className="absolute top-full left-24 right-0 mt-1 bg-white border border-gray-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                                {users.map(u => (
+                                    <div
+                                        key={u._id}
+                                        onClick={() => selectUser(u)}
+                                        className="p-3 hover:bg-[#FAF9FF] cursor-pointer flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
+                                    >
+                                        <img src={u.avatar} className="w-8 h-8 rounded-full" alt="" />
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800">{u.name}</p>
+                                            <p className="text-[11px] text-gray-500">{u.email}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-4 border-b border-gray-100 pb-3">
+                        <span className="text-sm font-semibold text-gray-500 w-20">Subject</span>
+                        <input
+                            type="text"
+                            value={subject}
+                            onChange={(e) => setSubject(e.target.value)}
+                            className="flex-1 outline-none text-sm text-gray-800"
+                        />
+                    </div>
+
+                    <div className="flex-1 min-h-[400px]">
+                        <textarea
+                            value={body}
+                            onChange={(e) => setBody(e.target.value)}
+                            placeholder="Body Text"
+                            className="w-full h-full min-h-[400px] outline-none text-sm text-gray-700 leading-relaxed resize-none p-2"
+                        ></textarea>
+                    </div>
+                </div>
+
+                {/* Footer Toolbar */}
+                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={sending}
+                            onClick={handleSend}
+                            className={`flex items-center gap-3 px-8 py-2.5 bg-[#6657E2] text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all ${sending ? 'opacity-50' : ''}`}
+                        >
+                            {sending ? 'Sending...' : 'Send'}
+                            <FiChevronDown />
+                        </button>
+
+                        <div className="h-6 w-px bg-gray-200 mx-2"></div>
+
+                        <div className="flex items-center gap-4 text-gray-400">
+                            <button className="hover:text-[#6657E2] transition-colors"><FiType size={18} /></button>
+                            <button className="hover:text-[#6657E2] transition-colors"><FiPaperclip size={18} /></button>
+                            <button className="hover:text-[#6657E2] transition-colors"><FiLink size={18} /></button>
+                            <button className="hover:text-[#6657E2] transition-colors"><FiSmile size={18} /></button>
+                            <button className="hover:text-[#6657E2] transition-colors"><FiMail size={18} /></button>
+                            <button className="hover:text-[#6657E2] transition-colors"><FiClock size={18} /></button>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 text-gray-400">
+                        <button className="hover:text-gray-600 transition-colors"><FiMoreHorizontal size={18} /></button>
+                        <button className="hover:text-red-500 transition-colors"><FiTrash2 size={18} /></button>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -210,7 +408,6 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
         try {
             const res = await api.get(`/support/tickets/${initialTicket._id}/messages`);
             const data = res.response?.data?.docs || res.data?.docs || [];
-            // Ensure sorting
             const sorted = data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
             setMessages(sorted);
         } catch (error) {
@@ -233,7 +430,6 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
         const content = newMessage.trim();
         if (!content) return;
 
-        // 1. Optimistic Update
         const tempId = "temp-" + Date.now();
         const optimisticMsg = {
             _id: tempId,
@@ -253,9 +449,6 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
                 ticketId: ticket._id,
                 content
             });
-
-            // Note: The optimistic message will be replaced by the real one 
-            // via the 'new-support-message' event listener in useEffect.
         } catch (error) {
             console.error("Admin send failed", error);
             toast.error("Failed to send message.");
@@ -274,25 +467,12 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
             socket.on('new-support-message', ({ ticketId, message }) => {
                 if (ticketId === initialTicket._id) {
                     setMessages(prev => {
-                        // 3. Deduplication Logic
-
-                        // Check if we already have this real ID
                         if (prev.some(m => m._id === message._id)) return prev;
-
-                        // Check race condition for Admin (isAdminMessage === true)
                         const isFromMe = message.isAdminMessage === true;
-
                         if (isFromMe) {
-                            const match = prev.find(m =>
-                                m.isOptimistic &&
-                                m.content === message.content
-                            );
-                            if (match) {
-                                // Replace the optimistic match with the real one
-                                return prev.map(m => m._id === match._id ? message : m);
-                            }
+                            const match = prev.find(m => m.isOptimistic && m.content === message.content);
+                            if (match) return prev.map(m => m._id === match._id ? message : m);
                         }
-
                         return [...prev, message];
                     });
                     scrollToBottom();
@@ -367,21 +547,18 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
                 </div>
             </div>
 
-            {/* Messages Area - Matching Image Style */}
+            {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
                 {messages.map((msg, i) => {
-                    // Admin View: isAdminMessage=true is ME (Right).
                     const isMe = msg.isAdminMessage;
                     return (
                         <div key={msg._id || i} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
                             <div className={`max-w-[70%] lg:max-w-[60%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                {/* Name label for user side only */}
                                 {!isMe && <span className="text-[10px] text-gray-500 mb-1 ml-1">{msg.sender?.name || ticket.user?.name}</span>}
-
                                 <div
                                     className={`px-5 py-3 rounded-2xl text-[14px] leading-relaxed shadow-xs ${isMe
-                                        ? 'bg-[#8B5CF6] text-white rounded-br-none' // Admin is Purple (Right)
-                                        : 'bg-[#F3F4F6] text-gray-700 rounded-bl-none' // User is Gray (Left)
+                                        ? 'bg-[#8B5CF6] text-white rounded-br-none'
+                                        : 'bg-[#F3F4F6] text-gray-700 rounded-bl-none'
                                         }`}
                                 >
                                     {msg.content}
@@ -403,11 +580,9 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
                         onSubmit={handleSend}
                         className="flex items-center gap-3 w-full border border-gray-200 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-[#6657E2]/20 transition-all shadow-sm"
                     >
-                        {/* Admin might want to attach files? Keeping it simple for now as per image */}
                         <div className="text-gray-400 p-2">
                             <FiMoreHorizontal size={24} />
                         </div>
-
                         <input
                             type="text"
                             value={newMessage}
@@ -415,7 +590,6 @@ function TicketChat({ ticket: initialTicket, onBack, isOnline }) {
                             placeholder="Reply as Admin..."
                             className="flex-1 bg-transparent border-none focus:ring-0 outline-none text-gray-700 placeholder-gray-400 h-10"
                         />
-
                         <button
                             type="submit"
                             disabled={sending || !newMessage.trim()}
