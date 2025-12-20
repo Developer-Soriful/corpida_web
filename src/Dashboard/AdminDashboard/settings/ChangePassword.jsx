@@ -1,9 +1,8 @@
 const ChangePassword = () => {
   return (
     <div>
-        Change password
+      Change password
     </div>
   )
 }
-
 export default ChangePassword

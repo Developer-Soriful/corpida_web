@@ -15,8 +15,8 @@ const PersonalInfo = () => {
     name: '', email: '', phoneNumber: '', countryCode: '',
     role: '', avatar: '', bio: '', dateOfBirth: '',
   });
-  const [selectedFile, setSelectedFile] = useState(null); // Holds the actual File object
-  const [previewUrl, setPreviewUrl] = useState(null);     // For local UI preview
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
@@ -101,7 +101,7 @@ const PersonalInfo = () => {
   // Handle new admin submission
   const handleNewAdminSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validate required fields
     if (!newAdmin.name || !newAdmin.email || !newAdmin.password) {
       toast.error('Name, email, and password are required');
@@ -117,13 +117,13 @@ const PersonalInfo = () => {
 
     try {
       setLoading(true);
-      
+
       // Send as JSON with avatar URL if file is selected
       let payload = {
         name: newAdmin.name,
         email: newAdmin.email,
-        password: newAdmin.password,
         role: newAdmin.role,
+        password: newAdmin.password,
       };
 
       // Handle dateOfBirth - provide default if empty
@@ -134,20 +134,20 @@ const PersonalInfo = () => {
           toast.error('Please enter a valid date of birth');
           return;
         }
-        // Format as YYYY-MM-DD
-        payload.dateOfBirth = date.toISOString().split('T')[0];
+        // Format as full ISO string as expected by backend
+        payload.dateOfBirth = date.toISOString();
       } else {
         // Provide a default date if empty (e.g., 18 years ago)
         const defaultDate = new Date();
         defaultDate.setFullYear(defaultDate.getFullYear() - 18);
-        payload.dateOfBirth = defaultDate.toISOString().split('T')[0];
+        payload.dateOfBirth = defaultDate.toISOString();
       }
 
       // If there's a file, first upload it to get the URL
       if (newAdminFile) {
         const avatarFormData = new FormData();
         avatarFormData.append('avatar', newAdminFile);
-        
+
         try {
           const avatarResponse = await api.post('/user/upload/avatar', avatarFormData, {
             headers: { 'Content-Type': 'multipart/form-data' }
@@ -158,11 +158,13 @@ const PersonalInfo = () => {
         }
       }
 
+      console.log('Sending payload for admin creation:', payload);
+
       // Create admin with JSON payload
       const response = await api.post('/user/create', payload, {
         headers: { 'Content-Type': 'application/json' }
       });
-      
+      console.log('Admin creation response:', response);
       toast.success('Admin created successfully!');
       setShowAddAdminModal(false);
       setNewAdmin({ name: '', email: '', password: '', role: 'admin', avatar: '', dateOfBirth: '' });
@@ -170,7 +172,9 @@ const PersonalInfo = () => {
       setNewAdminPreview(null);
     } catch (error) {
       console.error('Admin creation error:', error);
-      toast.error(error.response?.data?.message || 'Failed to create admin');
+      console.error('Error response data:', error.response?.data);
+      const errorMessage = error.response?.data || 'Failed to create admin';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -187,11 +191,11 @@ const PersonalInfo = () => {
     const formData = new FormData();
     // Append text fields
     formData.append('name', profile.name);
-    formData.append('phoneNumber', Number(profile.phoneNumber)); 
+    formData.append('phoneNumber', Number(profile.phoneNumber));
     formData.append('countryCode', profile.countryCode);
     formData.append('bio', profile.bio);
     formData.append('dateOfBirth', profile.dateOfBirth);
-    
+
     // Append file if a new one was selected
     if (selectedFile) {
       formData.append('avatar', selectedFile);
@@ -246,7 +250,7 @@ const PersonalInfo = () => {
                   className="w-full h-full object-cover"
                 />
                 {isEditing && (
-                  <div 
+                  <div
                     onClick={() => fileInputRef.current?.click()}
                     className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                   >
@@ -278,16 +282,16 @@ const PersonalInfo = () => {
                     className="flex items-center justify-between gap-3 px-4 py-4 bg-linear-to-br from-[#6366F1] to-[#8B5CF6] text-white rounded-lg min-w-[140px] shadow-sm"
                   >
                     <div className="flex items-center gap-2">
-                      <img 
-                        src={countries.find(c => c.code === profile.countryCode)?.flag || 'https://flagcdn.com/w40/us.png'} 
-                        alt="Country" 
-                        className="w-6 h-4 object-cover rounded-xs" 
+                      <img
+                        src={countries.find(c => c.code === profile.countryCode)?.flag || 'https://flagcdn.com/w40/us.png'}
+                        alt="Country"
+                        className="w-6 h-4 object-cover rounded-xs"
                       />
                       <span className="font-semibold text-sm">{profile.countryCode || '+1'}</span>
                     </div>
                     <IoChevronDown size={18} />
                   </button>
-                  
+
                   {/* Dropdown Menu */}
                   {showCountryDropdown && (
                     <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-purple-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -298,10 +302,10 @@ const PersonalInfo = () => {
                           onClick={() => handleCountrySelect(country)}
                           className="w-full flex items-center gap-3 px-3 py-2 hover:bg-purple-50 transition-colors text-left"
                         >
-                          <img 
-                            src={country.flag} 
-                            alt={country.name} 
-                            className="w-6 h-4 object-cover rounded-xs" 
+                          <img
+                            src={country.flag}
+                            alt={country.name}
+                            className="w-6 h-4 object-cover rounded-xs"
                           />
                           <div className="flex-1">
                             <div className="text-sm font-medium text-slate-700">{country.name}</div>
@@ -345,7 +349,7 @@ const PersonalInfo = () => {
               {/* Modal Header */}
               <div className="flex items-center justify-between p-6 border-b">
                 <h2 className="text-2xl font-semibold text-slate-800">Add New Admin</h2>
-                <button 
+                <button
                   onClick={() => setShowAddAdminModal(false)}
                   className="text-slate-400 hover:text-slate-600 transition-colors"
                 >
@@ -364,19 +368,19 @@ const PersonalInfo = () => {
                         alt="New Admin Profile"
                         className="w-full h-full object-cover"
                       />
-                      <div 
+                      <div
                         onClick={() => document.getElementById('newAdminFileInput')?.click()}
                         className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <span className="text-white text-xs font-bold">Change Photo</span>
                       </div>
                     </div>
-                    <input 
+                    <input
                       id="newAdminFileInput"
-                      type="file" 
-                      accept="image/*" 
-                      onChange={handleNewAdminFileChange} 
-                      className="hidden" 
+                      type="file"
+                      accept="image/*"
+                      onChange={handleNewAdminFileChange}
+                      className="hidden"
                     />
                     <p className="text-slate-400 text-sm font-medium mb-2">Profile</p>
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tight truncate w-full px-2">{newAdmin.name || 'New Admin'}</h2>
@@ -385,36 +389,36 @@ const PersonalInfo = () => {
 
                 {/* Right: Form Inputs */}
                 <main className="flex-1 space-y-6">
-                  <InputField 
-                    label="Name" 
-                    name="name" 
-                    value={newAdmin.name} 
-                    onChange={handleNewAdminChange} 
-                    disabled={false} 
+                  <InputField
+                    label="Name"
+                    name="name"
+                    value={newAdmin.name}
+                    onChange={handleNewAdminChange}
+                    disabled={false}
                   />
-                  <InputField 
-                    label="Email" 
-                    name="email" 
-                    type="email" 
-                    value={newAdmin.email} 
-                    onChange={handleNewAdminChange} 
-                    disabled={false} 
+                  <InputField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    value={newAdmin.email}
+                    onChange={handleNewAdminChange}
+                    disabled={false}
                   />
-                  <InputField 
-                    label="Password" 
-                    name="password" 
-                    type="password" 
-                    value={newAdmin.password} 
-                    onChange={handleNewAdminChange} 
-                    disabled={false} 
+                  <InputField
+                    label="Password"
+                    name="password"
+                    type="password"
+                    value={newAdmin.password}
+                    onChange={handleNewAdminChange}
+                    disabled={false}
                   />
-                  <InputField 
-                    label="Date of Birth" 
-                    name="dateOfBirth" 
-                    type="date" 
-                    value={newAdmin.dateOfBirth} 
-                    onChange={handleNewAdminChange} 
-                    disabled={false} 
+                  <InputField
+                    label="Date of Birth"
+                    name="dateOfBirth"
+                    type="date"
+                    value={newAdmin.dateOfBirth}
+                    onChange={handleNewAdminChange}
+                    disabled={false}
                     required={true}
                     max={new Date().toISOString().split('T')[0]}
                   />
