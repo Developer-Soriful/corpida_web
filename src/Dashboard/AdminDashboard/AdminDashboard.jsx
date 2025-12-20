@@ -329,9 +329,9 @@ const AdminDashboard = () => {
 
                     <div className="p-6">
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                            <div className="flex justify-between items-center py-2 border-b border-gray-100 w-full">
                                 <span className="text-gray-600 text-sm">Transaction ID:</span>
-                                <span className="font-medium text-gray-800">#{selectedTransaction.transactionId || selectedTransaction._id}</span>
+                                <span className="font-medium text-gray-800 w-full">#{selectedTransaction.transactionId || selectedTransaction._id}</span>
                             </div>
 
                             <div className="flex justify-between items-center py-2 border-b border-gray-100">

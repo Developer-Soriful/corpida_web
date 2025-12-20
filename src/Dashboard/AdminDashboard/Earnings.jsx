@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { FiSearch, FiEye, FiTrash2, FiFilter, FiDownload, FiPrinter, FiX } from 'react-icons/fi';
+import { FiSearch, FiEye, FiTrash2, FiDownload, FiPrinter, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
 import api from '../../services/api';
@@ -19,7 +19,6 @@ const debounce = (func, wait) => {
 };
 
 const Earnings = () => {
-    // State management
     const [summaryData, setSummaryData] = useState({
         totalEarnings: 0,
         totalUsers: 0,
@@ -61,21 +60,17 @@ const Earnings = () => {
             if (searchFilters.studentName) params.append('studentName', searchFilters.studentName);
             if (searchFilters.tutorName) params.append('tutorName', searchFilters.tutorName);
             params.append('page', currentPage);
-            params.append('limit', 10); // Items per page
+            params.append('limit', 10);
 
             const res = await api.get(`/transaction/all?${params.toString()}`);
             const responseData = res.response?.data || res.data || {};
 
-            // Handle the actual API response structure
             const transactionData = responseData.docs || [];
-
-            // Map transaction data to match the component's expected format
-            // Use _id as unique key to avoid duplicates, and display user IDs instead of names
             const mappedTransactions = transactionData.map(transaction => ({
-                id: transaction._id, // Use _id as unique key to avoid duplicates
-                transactionId: transaction.transactionId, // Keep transactionId for display
-                studentId: transaction.performedBy, // Display user ID instead of name
-                tutorId: transaction.receivedBy,   // Display user ID instead of name
+                id: transaction._id,
+                transactionId: transaction.transactionId,
+                studentId: transaction.performedBy,
+                tutorId: transaction.receivedBy,
                 amount: transaction.amount,
                 date: transaction.createdAt,
                 status: transaction.status,
