@@ -262,69 +262,89 @@ const Earnings = () => {
         if (!showModal || !selectedTransaction) return null;
 
         return (
-            <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50">
                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
-                    <div className="bg-linear-to-r from-[#614EFE] to-[#7D359F] text-white p-6 rounded-t-xl">
-                        <div className="flex justify-between items-center">
+                    <div className="rounded-t-xl relative">
+                        <div className="flex justify-center items-center py-6">
                             <h3 className="text-xl font-semibold">Transaction Details</h3>
-                            <button
-                                onClick={handleCloseModal}
-                                className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
-                            >
-                                <FiX size={20} />
-                            </button>
                         </div>
+                        <button
+                            onClick={handleCloseModal}
+                            className="bg-[#B6320E] rounded-bl-[20px] p-2 transition-colors absolute top-0 right-0 cursor-pointer rounded-tr-[8px]"
+                        >
+                            <FiX color="white" size={20} />
+                        </button>
                     </div>
 
-                    <div className="p-6">
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">Transaction ID:</span>
-                                <span className="font-medium text-gray-800">#{selectedTransaction.transactionId || selectedTransaction._id}</span>
+                    <div className="pb-6">
+                        <div className="space-y-2">
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] py-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">
+                                        Transaction ID:
+                                    </span>
+
+                                    <span className="font-medium text-gray-800 w-full text-end">
+                                        #{(selectedTransaction.transactionId || selectedTransaction._id).toString().slice(0, 30)}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">Date:</span>
-                                <span className="font-medium text-gray-800">{format(new Date(selectedTransaction.createdAt), 'MM-dd-yyyy')}</span>
+
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">Date:</span>
+                                    <span className="font-medium text-gray-800">{format(new Date(selectedTransaction.createdAt), 'MM-dd-yyyy')}</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">Student name:</span>
-                                <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">Student name:</span>
+                                    <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">A/C number:</span>
-                                <span className="font-medium text-gray-800">**** **** **** *545</span>
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">A/C number:</span>
+                                    <span className="font-medium text-gray-800">**** **** **** *545</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">A/C holder name:</span>
-                                <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">A/C holder name:</span>
+                                    <span className="font-medium text-gray-800">{selectedTransaction.performedBy?.name || 'N/A'}</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">Transaction amount:</span>
-                                <span className="font-medium text-green-600 text-lg">${selectedTransaction.amount}</span>
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">Transaction amount:</span>
+                                    <span className="font-medium text-green-600 text-lg">${selectedTransaction.amount}</span>
+                                </div>
                             </div>
 
-                            <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                                <span className="text-gray-600 text-sm">Tutor name:</span>
-                                <span className="font-medium text-gray-800">{selectedTransaction.receivedBy?.name || 'N/A'}</span>
+                            <div className="w-full bg-gradient-to-r from-[#614EFE] to-[#7D359F] pb-[1px]">
+                                <div className="flex justify-between items-center py-2 bg-white px-6">
+                                    <span className="text-gray-600 text-sm">Tutor name:</span>
+                                    <span className="font-medium text-gray-800">{selectedTransaction.receivedBy?.name || 'N/A'}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex space-x-3 mt-6">
+                        <div className="flex space-x-3 mt-6 px-6">
                             <button
                                 onClick={handleDownload}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-linear-to-r from-[#614EFE] to-[#7D359F] text-white rounded-lg hover:opacity-90 transition-opacity"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-linear-to-r from-[#614EFE] to-[#7D359F] text-white rounded-[16px] hover:opacity-90 transition-opacity"
                             >
                                 <FiDownload size={16} />
                                 Download
                             </button>
                             <button
                                 onClick={handlePrint}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-[16px] hover:bg-gray-200 transition-colors"
                             >
                                 <FiPrinter size={16} />
                                 Print
