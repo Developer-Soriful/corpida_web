@@ -10,12 +10,14 @@ import logo4 from "../../assets/payments.png";
 import logo5 from '../../assets/banner.png'
 import api from "../../services/api";
 import { toast } from "react-toastify";
+import Spinner from "../../Components/Spinner";
 
 export default function TutorDetails() {
   const navigate = useNavigate()
   const { id } = useParams();
   const [tutor, setTutor] = useState(null);
   const [reviews, setReviews] = useState([])
+  const [isBooking, setIsBooking] = useState(false);
   const tutorData = tutor
   // this is for tutor details api end point calling part 
   const handleMessageButton = () => {
@@ -29,38 +31,7 @@ export default function TutorDetails() {
     }
     tutorLoad();
   }, [])
-  // const reviews = [
-  //   {
-  //     id: 1,
-  //     name: "Darrell Steward",
-  //     date: "12/05/25",
-  //     rating: 4.8,
-  //     total: 120,
-  //     img: "https://randomuser.me/api/portraits/men/32.jpg",
-  //     text:
-  //       "Ms. Sarah helped me prepare for my B math exams, I improved from a 4.0 to 6! Her techniques and practice sessions are very effective."
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Courtney Henry",
-  //     date: "10/11/25",
-  //     rating: 5.0,
-  //     total: 98,
-  //     img: "https://randomuser.me/api/portraits/women/44.jpg",
-  //     text:
-  //       "Highly professional tutor. She explains concepts clearly and provides great materials for practice."
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Wade Warren",
-  //     date: "01/02/26",
-  //     rating: 4.6,
-  //     total: 88,
-  //     img: "https://randomuser.me/api/portraits/men/75.jpg",
-  //     text:
-  //       "Amazing teaching method! My speaking skills improved a lot within a month."
-  //   }
-  // ];
+
   // this is for teacher review data 
   useEffect(() => {
     const tutorReviewLoad = async () => {
@@ -77,6 +48,7 @@ export default function TutorDetails() {
     }
 
     try {
+      setIsBooking(true);
       const subject = tutor.teacher.subjectsTaught?.[0]
 
       const res = await api.post("/booking/claim", {
@@ -102,6 +74,8 @@ export default function TutorDetails() {
     } catch (error) {
       console.error(error);
       toast.error("Booking failed");
+    } finally {
+      setIsBooking(false);
     }
   };
 
@@ -285,9 +259,19 @@ export default function TutorDetails() {
             </div>
           )}
         </div>
-        <button onClick={handleBooking} className="w-full mt-5 py-3 text-white font-medium rounded-lg 
-            bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]">
-          Book Now
+        <button
+          onClick={handleBooking}
+          disabled={isBooking}
+          className="w-full mt-5 py-3 text-white font-medium rounded-lg 
+            bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]
+            disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isBooking ? (
+            <>
+              <Spinner size="small" showText={false} fullScreen={false} className="text-white" />
+              Processing...
+            </>
+          ) : 'Book Now'}
         </button>
         <button onClick={() => handleMessageButton()} className="w-full cursor-pointer mt-5 py-3 text-white font-medium rounded-lg 
             bg-gradient-to-r from-[#6657E2] via-[#903CD1] to-[#903CD1]">
