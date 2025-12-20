@@ -1,6 +1,5 @@
-import { FiChevronDown, FiCamera, FiPlus, FiTrash } from "react-icons/fi";
-import profilePic from "../../assets/Banner.png";
-import logo from "../../assets/Rectangle 923.png";
+import { FiCamera, FiPlus, FiTrash } from "react-icons/fi";
+import profilePic from "../../assets/banner.png";
 import { useAuth } from "../../context/UseAuth";
 import { useState, useRef, useEffect } from "react";
 import api from "../../services/api";

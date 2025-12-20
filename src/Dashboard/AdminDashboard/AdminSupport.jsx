@@ -30,13 +30,15 @@ export default function AdminSupport() {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isComposeOpen, setIsComposeOpen] = useState(false);
-    const [starredTickets, setStarredTickets] = useState(new Set()); // Local state for demonstration
+    const [starredTickets, setStarredTickets] = useState(new Set());
+    const [isUnseenExpanded, setIsUnseenExpanded] = useState(false);
 
     // --- Data Fetching ---
     const fetchAllTickets = async () => {
         try {
             const res = await api.get('/support/tickets?limit=100');
             const data = res.response?.data?.docs || res.data?.docs || [];
+            // Sort by most recent activity
             const sorted = Array.isArray(data) ? data.sort((a, b) => new Date(b.lastMessageAt || b.updatedAt) - new Date(a.lastMessageAt || a.updatedAt)) : [];
             setTickets(sorted);
         } catch (error) {
@@ -77,6 +79,7 @@ export default function AdminSupport() {
     const handleOpenTicket = (ticket) => {
         setSelectedTicket(ticket);
         setView('chat');
+        // If we move to chat, we can optionally collapse the sidebar list
     };
 
     const toggleStar = (e, ticketId) => {
@@ -88,6 +91,11 @@ export default function AdminSupport() {
             return next;
         });
     };
+
+    const unseenTickets = useMemo(() => {
+        // Tickets that are 'open' and where the last message is NOT from an admin
+        return tickets.filter(t => t.status === 'open' && t.lastMessage?.isAdminMessage === false);
+    }, [tickets]);
 
     const filteredTickets = useMemo(() => {
         return tickets.filter(ticket =>
@@ -102,38 +110,95 @@ export default function AdminSupport() {
     if (loading && view === 'list') return <Spinner text="Loading Support..." className="text-[#6657E2]" />;
 
     return (
-        <div className="h-[calc(100vh-140px)] bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col relative">
             {view === 'list' ? (
                 <div className="flex h-full">
                     {/* Left Inner Sidebar */}
-                    <div className="w-64 border-r border-gray-100 p-6 flex flex-col gap-6 bg-gray-50/30">
-                        <h1 className="text-xl font-bold text-gray-800">Inbox</h1>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between p-3 bg-white rounded-xl shadow-sm border border-gray-100 group cursor-pointer">
+                    <div className="w-[20%] border-r border-gray-100 p-4 flex flex-col bg-gray-50/50 overflow-y-auto custom-scrollbar">
+                        <div className="flex items-center justify-between">
+                            <h1 className="text-xl font-bold text-gray-800">Inbox</h1>
+                        </div>
+
+                        <div className="flex flex-col gap-1">
+                            {/* Email Expandable Item */}
+                            <div
+                                onClick={() => setIsUnseenExpanded(!isUnseenExpanded)}
+                                className={`flex items-center justify-between p-1 rounded-xl cursor-pointer transition-all duration-300 bg-white shadow-sm hover:bg-gray-50 border border-gray-100`}
+                            >
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center text-orange-500">
-                                        <FiMail size={18} />
+                                    <div className="w-9 h-9 rounded-lg flex items-center justify-center shadow-xs">
+                                        <FiMail size={19} color='#FFC107' />
                                     </div>
-                                    <span className="font-semibold text-gray-700">Email</span>
+                                    <span className={`font-bold text-sm ${isUnseenExpanded ? 'text-[#6657E2]' : 'text-gray-700'}`}>Email</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <span className="w-6 h-6 flex items-center justify-center bg-red-500 text-white text-[11px] font-bold rounded-full">
-                                        {tickets.filter(t => t.status === 'open').length}
-                                    </span>
-                                    <FiChevronDown className="text-gray-400" />
+                                    {unseenTickets.length > 0 && (
+                                        <span className="w-6 h-6 flex items-center justify-center bg-red-500 text-white text-[10px] font-black rounded-full shadow-lg border-2 border-white">
+                                            {unseenTickets.length > 99 ? '99+' : unseenTickets.length}
+                                        </span>
+                                    )}
+                                    <FiChevronDown
+                                        className={`text-gray-400 transition-transform duration-300 ${isUnseenExpanded ? 'rotate-180 text-[#6657E2]' : ''}`}
+                                        size={18}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Expanded Unseen List */}
+                            <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isUnseenExpanded ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'}`}>
+                                <div className="pl-4 pr-1 space-y-1 py-1">
+                                    {unseenTickets.length > 0 ? (
+                                        unseenTickets.slice(0, 10).map(ticket => (
+                                            <div
+                                                key={ticket._id}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenTicket(ticket);
+                                                }}
+                                                className="group flex items-center gap-3 p-2.5 rounded-lg hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 cursor-pointer transition-all"
+                                            >
+                                                <div className="relative shrink-0">
+                                                    <img
+                                                        src={ticket.user?.avatar || `https://ui-avatars.com/api/?name=${ticket.user?.name || 'U'}&background=random`}
+                                                        className="w-8 h-8 rounded-full border border-gray-100 object-cover"
+                                                        alt=""
+                                                    />
+                                                    <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-center mb-0.5">
+                                                        <h4 className="text-[12px] font-bold text-gray-800 truncate">{ticket.user?.name || "User"}</h4>
+                                                        <span className="text-[9px] font-medium text-gray-400">{new Date(ticket.lastMessageAt || ticket.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-500 truncate italic">
+                                                        {ticket.lastMessage?.content || "New conversation"}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-8 text-center bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
+                                            <p className="text-[11px] text-gray-400">All caught up!</p>
+                                        </div>
+                                    )}
+                                    {unseenTickets.length > 10 && (
+                                        <button className="w-full py-2 text-[11px] font-bold text-[#6657E2] hover:underline">
+                                            View all {unseenTickets.length} unseen
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-4">
-                            <div className="relative">
-                                <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <div className="relative group">
+                                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#6657E2] transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Search here ..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 bg-white border border-gray-100 rounded-xl shadow-sm outline-none focus:border-[#6657E2] text-sm transition-all"
+                                    className="w-full pl-11 pr-4 py-2 bg-white border border-gray-100 rounded-xl shadow-xs outline-none focus:border-[#6657E2] focus:ring-4 focus:ring-[#6657E2]/5 text-sm transition-all"
                                 />
                             </div>
                         </div>
@@ -151,7 +216,7 @@ export default function AdminSupport() {
                         {/* Compose Floating Button */}
                         <button
                             onClick={() => setIsComposeOpen(true)}
-                            className="absolute bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-linear-to-r from-[#6657E2] to-[#8B5CF6] text-white rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all group"
+                            className="flex absolute bottom-4 right-4 items-center justify-between gap-2 bg-linear-to-r from-[#6366F1] to-[#A855F7] text-white px-4 py-2 rounded-[4px] font-bold shadow-lg hover:shadow-purple-200 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70"
                         >
                             <div className="p-1 bg-white/20 rounded-lg group-hover:rotate-12 transition-transform">
                                 <FiEdit3 size={20} />
@@ -295,7 +360,7 @@ function ComposeModal({ onClose, onSuccess }) {
 
     return (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-            <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden animate-fadeIn">
+            <div className="bg-white w-[80vw] min-h-[80vh] flex flex-col justify-between shadow-2xl overflow-hidden animate-fadeIn">
                 {/* Header */}
                 <div className="bg-white px-6 py-4 flex items-center justify-between border-b border-gray-100">
                     <h2 className="text-lg font-bold text-gray-800">New Message</h2>
@@ -363,15 +428,14 @@ function ComposeModal({ onClose, onSuccess }) {
                 </div>
 
                 {/* Footer Toolbar */}
-                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                <div className="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <button
                             disabled={sending}
                             onClick={handleSend}
-                            className={`flex items-center gap-3 px-8 py-2.5 bg-[#6657E2] text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all ${sending ? 'opacity-50' : ''}`}
+                            className="flex items-center gap-2 bg-linear-to-r from-[#6366F1] to-[#A855F7] text-white px-10 py-4 rounded-[4px] font-bold shadow-lg hover:shadow-purple-200 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-70"
                         >
                             {sending ? 'Sending...' : 'Send'}
-                            <FiChevronDown />
                         </button>
 
                         <div className="h-6 w-px bg-gray-200 mx-2"></div>
