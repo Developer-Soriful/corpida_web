@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiCheckCircle, FiAlertCircle, FiDownload, FiPrinter, FiX, FiTrash2, FiEye } from 'react-icons/fi';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
@@ -24,6 +24,9 @@ const Teachers = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
 
+    // Debounce timer ref
+    const debounceTimerRef = useRef(null);
+
     const fetchSummaryData = async () => {
         try {
             const res = await api.get('/dashboard');
@@ -39,7 +42,15 @@ const Teachers = () => {
             setLoading(true);
             const params = new URLSearchParams();
             if (searchFilters.teacherName) params.append('name', searchFilters.teacherName);
-            if (searchFilters.email) params.append('email', searchFilters.email);
+
+            // Only add email parameter if it's a valid email format
+            if (searchFilters.email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(searchFilters.email)) {
+                    params.append('email', searchFilters.email);
+                }
+            }
+
             params.append('role', 'teacher');
             params.append('page', currentPage);
             params.append('limit', 10);
@@ -81,9 +92,30 @@ const Teachers = () => {
         fetchTeachers();
     }, []);
 
+    // Debounced search effect - only triggers after user stops typing for 500ms
+    useEffect(() => {
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Set new timer
+        debounceTimerRef.current = setTimeout(() => {
+            fetchTeachers();
+        }, 500);
+
+        // Cleanup function
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, [searchFilters]);
+
+    // Immediate fetch when page changes
     useEffect(() => {
         fetchTeachers();
-    }, [currentPage, searchFilters]);
+    }, [currentPage]);
 
     const handleFilterChange = (field, value) => {
         setSearchFilters(prev => ({ ...prev, [field]: value }));

@@ -1,4 +1,4 @@
-import { useState, useEffect, } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiSearch, FiEye, FiDownload, FiPrinter, FiX, FiCheckCircle, FiAlertCircle, FiTrash2 } from 'react-icons/fi';
 import { MdBlock } from "react-icons/md";
 import { CgUnblock } from "react-icons/cg";
@@ -26,6 +26,9 @@ const Students = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedStudent, setSelectedStudent] = useState(null);
 
+    // Debounce timer ref
+    const debounceTimerRef = useRef(null);
+
     // API Integration Functions
     const fetchSummaryData = async () => {
         try {
@@ -43,7 +46,15 @@ const Students = () => {
             setLoading(true);
             const params = new URLSearchParams();
             if (searchFilters.studentName) params.append('name', searchFilters.studentName);
-            if (searchFilters.email) params.append('email', searchFilters.email);
+
+            // Only add email parameter if it's a valid email format
+            if (searchFilters.email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(searchFilters.email)) {
+                    params.append('email', searchFilters.email);
+                }
+            }
+
             params.append('role', 'student');
             params.append('page', currentPage);
             params.append('limit', 10);
@@ -87,9 +98,30 @@ const Students = () => {
         fetchStudents();
     }, []);
 
+    // Debounced search effect - only triggers after user stops typing for 500ms
+    useEffect(() => {
+        // Clear existing timer
+        if (debounceTimerRef.current) {
+            clearTimeout(debounceTimerRef.current);
+        }
+
+        // Set new timer
+        debounceTimerRef.current = setTimeout(() => {
+            fetchStudents();
+        }, 500);
+
+        // Cleanup function
+        return () => {
+            if (debounceTimerRef.current) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, [searchFilters]);
+
+    // Immediate fetch when page changes
     useEffect(() => {
         fetchStudents();
-    }, [currentPage, searchFilters]);
+    }, [currentPage]);
 
     const handleFilterChange = (field, value) => {
         setSearchFilters(prev => ({ ...prev, [field]: value }));
