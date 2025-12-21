@@ -1,8 +1,9 @@
-import { FiCalendar, FiClock } from "react-icons/fi";
+import { FiCalendar, FiClock, FiX } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import Spinner from "../../Components/Spinner";
 import { useSocket } from "../../context/SocketContext";
+import { toast } from "react-toastify";
 
 export default function MyLessonsPage() {
   const { onlineUsers } = useSocket();
@@ -11,6 +12,8 @@ export default function MyLessonsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [cancelModal, setCancelModal] = useState({ show: false, bookingId: null });
+  const [cancelReason, setCancelReason] = useState("");
   const LessonCard = ({ data }) => {
     const isOnline = (id) => onlineUsers?.includes(id);
     const { subject, status, date, fromTime, toTime } = data;
@@ -52,27 +55,76 @@ export default function MyLessonsPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8">
-            <p className="text-gray-600 text-[14px]">
-              <span className="font-semibold text-gray-700">Subject:</span> {subject}
-            </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-gray-600 text-[14px]">
+                <span className="font-semibold text-gray-700">Subject:</span> {subject}
+              </p>
 
-            <div className="flex items-center gap-4 text-gray-500 text-[13px]">
-              <div className="flex items-center gap-2">
-                <FiCalendar className="text-purple-500" />
-                {formattedDate}
-              </div>
+              <div className="flex items-center gap-4 text-gray-500 text-[13px]">
+                <div className="flex items-center gap-2">
+                  <FiCalendar className="text-purple-500" />
+                  {formattedDate}
+                </div>
 
-              <div className="flex items-center gap-2 ml-4">
-                <FiClock className="text-purple-500" />
-                {timeRange}
+                <div className="flex items-center gap-2 ml-4">
+                  <FiClock className="text-purple-500" />
+                  {timeRange}
+                </div>
               </div>
             </div>
+
+            {/* Cancel Button - only show for scheduled/pending lessons */}
+            {(status === "scheduled" || status === "pending" || status === "cancelled") && (
+              <div className="flex items-end justify-end">
+                <button
+                  onClick={() => {
+                    if (status !== "cancelled") {
+                      setCancelModal({ show: true, bookingId: data._id || data.id });
+                      setCancelReason("");
+                    }
+                  }}
+                  disabled={status === "cancelled"}
+                  className={`px-4 py-2 text-white text-sm rounded-lg transition-colors ${status === "cancelled"
+                    ? "bg-gray-400 cursor-not-allowed opacity-60"
+                    : "bg-red-500 hover:bg-red-600"
+                    }`}
+                >
+                  {status === "cancelled" ? "Already Cancelled" : "Cancel Booking"}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
     );
   };
 
+  // Handle cancel booking
+  const handleCancelBooking = async () => {
+    if (!cancelReason.trim()) {
+      toast.error("Please provide a reason for cancellation");
+      return;
+    }
+
+    try {
+      await api.post(`/booking/${cancelModal.bookingId}/cancel`, {
+        reason: cancelReason
+      });
+
+      toast.success("Booking cancelled successfully");
+      setCancelModal({ show: false, bookingId: null });
+      setCancelReason("");
+
+      // Refresh the lesson data
+      const res = await api.get(`/booking/student?page=${currentPage}&limit=10`);
+      const responseData = res.response?.data || {};
+      const docs = responseData.docs || [];
+      setLessonData(docs);
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error(error.response?.data?.message || "Failed to cancel booking");
+    }
+  };
 
   // this is the lesson data from data bse 
   useEffect(() => {
@@ -186,6 +238,60 @@ export default function MyLessonsPage() {
 
           <div className="text-sm text-gray-500">
             Page {currentPage} of {totalPages}
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Booking Modal */}
+      {cancelModal.show && (
+        <div className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+            <div className="rounded-t-xl relative">
+              <div className="flex justify-center items-center py-6">
+                <h3 className="text-xl font-semibold">Cancel Booking</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setCancelModal({ show: false, bookingId: null });
+                  setCancelReason("");
+                }}
+                className="bg-[#B6320E] rounded-bl-[20px] p-2 transition-colors absolute top-0 right-0 cursor-pointer rounded-tr-[8px]"
+              >
+                <FiX color="white" size={20} />
+              </button>
+            </div>
+
+            <div className="pb-6 px-6">
+              <p className="text-gray-600 text-sm mb-4">
+                Please provide a reason for cancelling this booking:
+              </p>
+
+              <textarea
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Enter cancellation reason..."
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                rows="4"
+              />
+
+              <div className="flex space-x-3 mt-6">
+                <button
+                  onClick={() => {
+                    setCancelModal({ show: false, bookingId: null });
+                    setCancelReason("");
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-[16px] hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCancelBooking}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-[16px] hover:bg-red-600 transition-colors"
+                >
+                  Confirm Cancellation
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
