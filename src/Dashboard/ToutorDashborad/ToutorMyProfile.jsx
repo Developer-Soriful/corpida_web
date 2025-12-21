@@ -1,12 +1,10 @@
-import { FiChevronDown } from "react-icons/fi";
+import { FiChevronDown, FiCamera } from "react-icons/fi";
 import logo from "../../assets/Rectangle 923.png";
 import { FaRegEdit, FaSave, FaTimes } from "react-icons/fa";
 import { useAuth } from "../../context/UseAuth";
 import Spinner from "../../Components/Spinner";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import api from "../../services/api";
-
-import { objectToFormData } from "../../utils/formDataHelper";
 import { toast } from "react-toastify";
 
 export default function TutorMyProfile() {
@@ -14,6 +12,8 @@ export default function TutorMyProfile() {
     const { user, setUser } = useAuth()
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const fileInputRef = useRef(null);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
@@ -85,6 +85,35 @@ export default function TutorMyProfile() {
         return date.toISOString();
     };
 
+    // Handle avatar/profile picture upload
+    const handleAvatarChange = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+            toast.error('Please select a valid image file (JPG, PNG, or GIF)');
+            return;
+        }
+
+        // Validate file size (max 2MB)
+        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        if (file.size > maxSize) {
+            toast.error('Image size must be less than 2MB');
+            return;
+        }
+
+        // Convert to base64 and update preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const base64String = reader.result;
+            setAvatarPreview(base64String);
+            setFormData(prev => ({ ...prev, avatar: base64String }));
+        };
+        reader.readAsDataURL(file);
+    };
+
 
     const handleEdit = () => {
         setIsEditing(true);
@@ -111,6 +140,7 @@ export default function TutorMyProfile() {
 
     const handleCancel = () => {
         setIsEditing(false);
+        setAvatarPreview(null); // Reset avatar preview
         // Reset form data 
         setFormData({
             name: user?.name || '',
@@ -150,7 +180,7 @@ export default function TutorMyProfile() {
 
             const payload = {
                 name: formData.name,
-                avatar: user?.avatar || 'data:image/png;base64,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',
+                avatar: formData.avatar || user?.avatar,
                 phoneNumber: Number(formData.phoneNumber),
                 dateOfBirth: user?.dateOfBirth || null,
                 countryCode: formData.countryCode,
@@ -162,7 +192,7 @@ export default function TutorMyProfile() {
                     subjectsTaught: subjectsArray,
                     availableDays: daysArray,
                     availableTime: {
-                        startTime: toBackendTime12h(formData.availableTime.startTime),
+                        startTime: toBackendIso(formData.availableTime.startTime, user?.teacher?.availableTime?.startTime),
                         endTime: toBackendIso(formData.availableTime.endTime, user?.teacher?.availableTime?.endTime)
                     },
                     qualification: qualificationsArray,
@@ -172,9 +202,17 @@ export default function TutorMyProfile() {
 
             // Send JSON directly
             const res = await api.patch("/user/self/update", payload)
-            console.log(res)
-            if (res.data?.response?.data) {
-                setUser(res.data.response.data);
+            console.log('Update Response:', res)
+
+            // Handle different response structures
+            const updatedUser = res.response?.data || res.data?.response?.data || res.data;
+
+            if (updatedUser) {
+                setUser(updatedUser);
+                toast.success("Profile updated successfully!");
+                setIsEditing(false);
+            } else {
+                console.warn('Unexpected response structure:', res);
                 toast.success("Profile updated successfully!");
                 setIsEditing(false);
             }
@@ -221,10 +259,33 @@ export default function TutorMyProfile() {
 
                 <div className="w-64">
                     <div className="bg-white rounded-xl shadow p-6 text-center">
-                        <img
-                            src={user?.avatar}
-                            className="w-24 h-24 rounded-full mx-auto object-cover"
-                        />
+                        {/* Avatar with upload functionality */}
+                        <div className="relative w-24 h-24 mx-auto">
+                            <img
+                                src={avatarPreview || user?.avatar}
+                                alt={user?.name}
+                                className="w-24 h-24 rounded-full object-cover"
+                            />
+
+                            {/* Upload overlay - only show when editing */}
+                            {isEditing && (
+                                <>
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+                                    >
+                                        <FiCamera className="text-white text-2xl" />
+                                    </div>
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleAvatarChange}
+                                        className="hidden"
+                                    />
+                                </>
+                            )}
+                        </div>
 
                         <h3 className="mt-4 font-semibold text-gray-900 text-lg">
                             {user?.name}

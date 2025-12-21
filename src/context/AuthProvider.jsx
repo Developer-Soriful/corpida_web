@@ -224,6 +224,7 @@ const AuthProvider = ({ children }) => {
         changePassword,
         logOut,
         user,
+        setUser,  // Add setUser to allow components to update user state
         loading,
         deleteUser
     }
