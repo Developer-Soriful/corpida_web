@@ -47,15 +47,26 @@ const EnterVerification = () => {
         setLoading(true);
         try {
             const res = await verifyUser(email, otp);
-            if (res.status) {
-                toast.success("Account verified successfully!");
-                navigate("/login");
+            const userData = res.userData || {};
+            
+            // Handle navigation based on user role
+            if (userData.role === 'teacher') {
+                if (!userData.teacher?.isProfileComplete) {
+                    navigate('/teacher/complete-profile');
+                } else {
+                    navigate('/toturdashbord');
+                }
+            } else if (userData.role === 'student') {
+                navigate('/dashboard');
+            } else if (userData.role === 'admin') {
+                navigate('/admin');
             } else {
-                toast.error(res.message || "Verification failed");
+                // Fallback for any other role or missing role
+                navigate('/');
             }
         } catch (error) {
             console.error(error);
-            toast.error("Something went wrong");
+            toast.error(error?.response?.data?.message || "Verification failed. Please try again.");
         } finally {
             setLoading(false);
         }

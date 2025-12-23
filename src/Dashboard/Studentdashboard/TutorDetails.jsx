@@ -3,7 +3,6 @@ import { IoSearch } from "react-icons/io5";
 import { LuSettings2 } from "react-icons/lu";
 
 import { Link, useNavigate, useParams } from "react-router";
-import profileImg from "../../assets/IMG_8.png";
 import logo2 from "../../assets/business_center.png";
 import logo3 from "../../assets/award_star.png";
 import logo4 from "../../assets/payments.png";
@@ -19,9 +18,7 @@ export default function TutorDetails() {
   const [reviews, setReviews] = useState([])
   const [isBooking, setIsBooking] = useState(false);
   const tutorData = tutor
-  // this is for tutor details api end point calling part 
   const handleMessageButton = () => {
-    // Navigate to SendMessages with tutor ID and tutor data for population
     navigate(`/dashboard/sendMessages/${id}`, { state: { tutor: tutorData } });
   }
   useEffect(() => {
@@ -35,11 +32,16 @@ export default function TutorDetails() {
   // this is for teacher review data 
   useEffect(() => {
     const tutorReviewLoad = async () => {
-      const res = await api.get(`/review/user`);
+      // Pass teacherId in both params and data to cover backend expectations
+      const res = await api.get(`/review/user`, {
+        params: { teacherId: id },
+        data: { teacherId: id }
+      });
       setReviews(res.response.data.docs)
     }
     tutorReviewLoad();
   }, [])
+  console.log(reviews)
   // this is for handle bookings 
   const handleBooking = async () => {
     if (!tutor || !tutor.teacher) {
@@ -68,7 +70,6 @@ export default function TutorDetails() {
         return;
       }
 
-      // ✅ ONLY STRIPE REDIRECT
       window.location.href = stripeUrl;
 
     } catch (error) {
@@ -84,10 +85,9 @@ export default function TutorDetails() {
   useEffect(() => {
     const checkBookingStatus = async () => {
       try {
-        const res = await api.get('/booking/student?limit=100'); // Fetch enough to cover recent bookings
+        const res = await api.get('/booking/student?limit=100');
         const bookings = res?.response?.data?.docs || [];
 
-        // Check if any booking matches the current teacher ID
         const hasBooking = bookings.some(booking =>
           booking.teacherId === id || booking.teacher?._id === id
         );
@@ -107,11 +107,7 @@ export default function TutorDetails() {
 
   return (
     <div className="min-h-screen bg-[#F3F7F2] p-5">
-
-      {/* 🔍 Search Bar */}
       <div className="bg-white p-3 rounded-xl shadow-sm ">
-
-
         <div className="flex items-center w-[900px] mx-auto gap-3">
 
           <div className="flex items-center bg-[#EBEBEB] border border-[#E5E7EB]
@@ -198,14 +194,7 @@ export default function TutorDetails() {
             ?.map((item) => (
               <span
                 key={item}
-                className="
-                            px-3 py-1 text-sm rounded-full 
-                          bg-[#EBEBEB]
-                            border border-[#E3E3FF]
-                            font-medium
-                            bg-clip-text text-transparent
-                            bg-linear-to-r from-[#6657E2] to-[#903CD1]
-      "
+                className="px-3 py-1 text-sm rounded-full bg-[#EBEBEB] border border-[#E3E3FF] font-medium bg-clip-text text-transparent bg-linear-to-r from-[#6657E2] to-[#903CD1]"
               >
                 {item}
               </span>
@@ -219,20 +208,10 @@ export default function TutorDetails() {
         <h3 className="mt-8 font-semibold text-[#7C7C7C]">Language</h3>
 
         <div className="inline-block px-3 py-1 bg-[#EBEBEB] border border-[#E3E3FF] rounded-full">
-          <p
-            className="
-      text-sm font-medium
-      bg-gradient-to-r from-[#6657E2] to-[#903CD1]
-      bg-clip-text text-transparent
-    "
-          >
+          <p className="text-sm font-medium bg-gradient-to-r from-[#6657E2] to-[#903CD1] bg-clip-text text-transparent">
             English
           </p>
         </div>
-
-
-
-
         {/* Available Time */}
         <h3 className="mt-8 font-semibold text-[#7C7C7C]">Available time and date</h3>
 
@@ -249,7 +228,6 @@ export default function TutorDetails() {
             })}
           </span>
         </div>
-
         {/* Reviews */}
         <h3 className="mt-10 font-semibold text-[#7C7C7C]">Review</h3>
         <div className="mt-5 space-y-6">
@@ -267,10 +245,8 @@ export default function TutorDetails() {
 
                 {/* Rating */}
                 <div className="flex items-center gap-1 mt-[2px]">
-                  <span className="text-[#FFB800] text-sm"> ★★★★★</span>
-
+                  <span className="text-[#FFB800] text-sm">★★★★★</span>
                 </div>
-
                 {/* Review Text */}
                 <p className="text-sm text-[#333333] mt-2 leading-relaxed">
                   {review.text}

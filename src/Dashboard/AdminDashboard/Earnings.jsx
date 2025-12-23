@@ -285,7 +285,7 @@ const Earnings = () => {
                                     </span>
 
                                     <span className="font-medium text-gray-800 w-full text-end">
-                                        #{(selectedTransaction.transactionId || selectedTransaction._id).toString().slice(0, 30)}
+                                        #{(selectedTransaction.transactionId || selectedTransaction._id).toString()?.slice(0, 30)}
                                     </span>
                                 </div>
                             </div>

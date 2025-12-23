@@ -172,41 +172,106 @@ export default function TutorMyProfile() {
         console.log('Saving profile data:', formData);
 
         try {
-            const subjectsArray = formData.subjectsTaught.split(',').map(s => s.trim()).filter(Boolean);
-            const daysArray = formData.availableDays.split(',').map(d => d.trim()).filter(Boolean);
+            // Process subjects - split by comma and trim each item
+            const subjectsArray = formData.subjectsTaught
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean);
 
-            const qualificationsArray = formData.qualification.split('\n').map(line => {
-                const match = line.match(/^(.*?) - (.*?) \((.*?)\)$/);
-                if (match) {
-                    return { title: match[1].trim(), institution: match[2].trim(), year: match[3].trim() };
-                }
-                return line.trim() ? { title: line.trim(), institution: '', year: '' } : null;
-            }).filter(Boolean);
+            // Process available days
+            const daysArray = formData.availableDays
+                .split(',')
+                .map(d => d.trim())
+                .filter(Boolean);
 
-            const payload = {
-                name: formData.name,
-                avatar: formData.avatar || user?.avatar,
-                phoneNumber: Number(formData.phoneNumber),
-                countryCode: formData.countryCode,
-                bio: formData.bio,
-                teacher: {
-                    hourlyRate: Number(formData.hourlyRate),
-                    content: formData.content || formData.bio || 'No content provided',
-                    yearsOfTeachingExp: user?.teacher?.yearsOfTeachingExp || 0,
-                    subjectsTaught: subjectsArray,
-                    availableDays: daysArray,
-                    availableTime: {
-                        startTime: toBackendIso(formData.availableTime.startTime, user?.teacher?.availableTime?.startTime),
-                        endTime: toBackendIso(formData.availableTime.endTime, user?.teacher?.availableTime?.endTime)
-                    },
-                    qualification: qualificationsArray,
-                    documents: user?.teacher?.documents || []
-                }
+            // Process qualifications
+            const qualificationsArray = formData.qualification
+                .split('\n')
+                .map(line => {
+                    const match = line.match(/^(.*?) - (.*?) \((.*?)\)$/);
+                    if (match) {
+                        const yearMatch = match[3].trim();
+                        const year = yearMatch && !isNaN(yearMatch) ? parseInt(yearMatch, 10) : new Date().getFullYear();
+                        return {
+                            title: match[1].trim() || 'Not specified',
+                            institution: match[2].trim() || 'Not specified',
+                            year: year
+                        };
+                    }
+                    return line.trim() ? {
+                        title: line.trim() || 'Not specified',
+                        institution: `${line.trim()} Institution`,
+                        year: new Date().getFullYear()
+                    } : null;
+                })
+                .filter(Boolean);
+
+            // Create FormData for the request
+            const formDataPayload = new FormData();
+
+            // Add basic user info
+            formDataPayload.append('name', formData.name);
+            if (formData.avatar) {
+                formDataPayload.append('avatar', formData.avatar);
+            }
+            formDataPayload.append('phoneNumber', formData.phoneNumber);
+            formDataPayload.append('countryCode', formData.countryCode);
+            formDataPayload.append('bio', formData.bio);
+
+            // Create teacher data object
+            const teacherData = {
+                ...(user?.teacher || {}), // Preserve existing teacher data
+                yearsOfTeachingExp: user?.teacher?.yearsOfTeachingExp || 0,
+                hourlyRate: Number(formData.hourlyRate) || 0,
+                availableTime: {
+                    startTime: toBackendIso(formData.availableTime.startTime, user?.teacher?.availableTime?.startTime) || new Date().toISOString(),
+                    endTime: toBackendIso(formData.availableTime.endTime, user?.teacher?.availableTime?.endTime) || new Date().toISOString()
+                },
+                content: formData.content || formData.bio || 'No content provided'
             };
 
-            // Send JSON directly
-            const res = await api.patch("/user/self/update", payload)
-            console.log('Update Response:', res)
+            // Add arrays separately to ensure proper formatting
+            subjectsArray.forEach((subject, index) => {
+                formDataPayload.append(`teacher[subjectsTaught][${index}]`, subject);
+            });
+
+            daysArray.forEach((day, index) => {
+                formDataPayload.append(`teacher[availableDays][${index}]`, day);
+            });
+
+            qualificationsArray.forEach((qual, index) => {
+                formDataPayload.append(`teacher[qualification][${index}][title]`, qual.title || 'Not specified');
+                formDataPayload.append(`teacher[qualification][${index}][institution]`, qual.institution || 'Not specified');
+                // Ensure year is a valid number
+                const yearValue = Number.isInteger(qual.year) ? qual.year : new Date().getFullYear();
+                formDataPayload.append(`teacher[qualification][${index}][year]`, yearValue);
+            });
+
+            // Add other teacher data
+            Object.entries(teacherData).forEach(([key, value]) => {
+                if (key !== 'subjectsTaught' && key !== 'availableDays' && key !== 'qualification') {
+                    if (typeof value === 'object' && value !== null) {
+                        Object.entries(value).forEach(([subKey, subValue]) => {
+                            formDataPayload.append(`teacher[${key}][${subKey}]`, subValue);
+                        });
+                    } else {
+                        formDataPayload.append(`teacher[${key}]`, value);
+                    }
+                }
+            });
+
+            // Log the form data for debugging
+            console.log('FormData entries:');
+            for (let pair of formDataPayload.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+
+            // Send the request with proper headers
+            const res = await api.patch("/user/self/update", formDataPayload, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             // Handle different response structures
             const updatedUser = res.response?.data || res.data?.response?.data || res.data;
@@ -225,7 +290,7 @@ export default function TutorMyProfile() {
             if (error.response) {
                 console.error("Server Response Error:", error.response.data);
             }
-            toast.error("Failed to save changes. Please try again.");
+            toast.error(error.response?.data?.message || "Failed to save changes. Please try again.");
         } finally {
             setIsSaving(false);
         }

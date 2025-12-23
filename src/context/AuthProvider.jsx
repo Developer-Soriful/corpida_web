@@ -62,7 +62,27 @@ const AuthProvider = ({ children }) => {
                 email,
                 code
             })
-            toast.success("Account verified successfully!")
+
+            // Auto-login logic: Store tokens and user data if present
+            const userData = response.response?.data || response.data
+            const tokens = response.response?.tokens || response.tokens
+
+            if (userData) {
+                setUser(userData)
+                
+                // Store tokens if they exist
+                if (tokens?.access?.token) {
+                    localStorage.setItem('authToken', tokens.access.token)
+                    if (tokens.refresh?.token) {
+                        localStorage.setItem('refreshToken', tokens.refresh.token)
+                    }
+                }
+
+                // Return the response and let the component handle navigation
+                toast.success("Account verified successfully!")
+                return { ...response, userData }
+            }
+
             return response
         } catch (error) {
             toast.error(error?.response?.data?.message || "Verification failed")

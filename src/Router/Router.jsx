@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
+// Import all components (keep all your existing imports)
 import RootLayout from "../Layout/RootLayout";
 import Home from "../Components/Home/Home";
 import LoginPage from "../Authentication/LoginPage";
@@ -10,6 +11,8 @@ import StepThree from "../Pages/Tutorinformation/StepThree";
 import RecoverAccount from "../Authentication/RecoverAccount";
 import EnterVerification from "../Authentication/EnterVerification";
 import SetPassword from "../Authentication/SetPassword";
+import CompleteProfile from "../Authentication/CompleteProfile";
+import TeacherCompleteProfile from "../Authentication/TeacherCompleteProfile";
 import Studentdashboard from "../Dashboard/Studentdashboard/Studentdashboard";
 import FindTutors from "../Dashboard/Studentdashboard/FindTutors";
 import Notification from "../Dashboard/Studentdashboard/Notification";
@@ -51,7 +54,7 @@ import FAQ from "../Dashboard/AdminDashboard/settings/FAQ";
 
 export const router = createBrowserRouter([
     {
-        path: "/",
+        path: '/',
         Component: RootLayout,
         children: [
             {
@@ -102,7 +105,14 @@ export const router = createBrowserRouter([
                 path: 'setpassword',
                 Component: SetPassword
             },
-
+            {
+                path: 'complete-profile',
+                Component: CompleteProfile
+            },
+            {
+                path: 'teacher/complete-profile',
+                element: <TeacherCompleteProfile />
+            }
         ]
     },
     {
@@ -113,6 +123,10 @@ export const router = createBrowserRouter([
             </ProtectedRoute>
         ),
         children: [
+            {
+                index: true,
+                Component: FindTutors
+            },
             {
                 path: 'findtutors',
                 Component: FindTutors
@@ -141,7 +155,6 @@ export const router = createBrowserRouter([
                 path: 'myprofile',
                 Component: MyProfile
             },
-
             {
                 path: 'tutordetails/:id',
                 Component: TutorDetails
@@ -153,19 +166,21 @@ export const router = createBrowserRouter([
             {
                 path: 'sendmessages/:id',
                 Component: SendMessages
-            },
-
+            }
         ]
-    }
-    ,
+    },
     {
-        path: 'toturdashbord',
+        path: '/toturdashbord',
         Component: () => (
             <TutorProtectedRoute>
                 <ToutorDashbord />
             </TutorProtectedRoute>
         ),
         children: [
+            {
+                index: true,
+                Component: ToutorMyLessonsPage
+            },
             {
                 path: 'toutornotification',
                 Component: ToutorNotification
@@ -201,7 +216,7 @@ export const router = createBrowserRouter([
             {
                 path: 'toutorsendmessagest/:id',
                 Component: ToutorSendMessages
-            },
+            }
         ]
     },
     {
@@ -212,6 +227,10 @@ export const router = createBrowserRouter([
             </AdminProtectedRoute>
         ),
         children: [
+            {
+                index: true,
+                Component: Earnings
+            },
             {
                 path: 'support',
                 Component: AdminSupport
@@ -234,7 +253,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'settings',
-                Component: Settings,
+                Component: Settings
             },
             {
                 path: 'personal',
@@ -255,7 +274,7 @@ export const router = createBrowserRouter([
             {
                 path: 'faq',
                 Component: FAQ
-            },
+            }
         ]
     }
 ]);
