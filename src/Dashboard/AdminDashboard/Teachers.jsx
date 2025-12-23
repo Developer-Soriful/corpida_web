@@ -24,6 +24,11 @@ const Teachers = () => {
     const [showModal, setShowModal] = useState(false);
     const [selectedTeacher, setSelectedTeacher] = useState(null);
 
+    // State for rejection modal
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [teacherToReject, setTeacherToReject] = useState(null);
+
     // Debounce timer ref
     const debounceTimerRef = useRef(null);
 
@@ -84,6 +89,43 @@ const Teachers = () => {
             toast.error('Failed to load teachers');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleApprove = async (teacherId) => {
+        try {
+            await api.post(`/admin/teachers/${teacherId}/approve`);
+            toast.success("Teacher approved successfully");
+            fetchTeachers();
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to approve teacher");
+        }
+    };
+
+    const handleRejectClick = (teacher) => {
+        setTeacherToReject(teacher);
+        setRejectionReason('');
+        setShowRejectModal(true);
+    };
+
+    const confirmReject = async () => {
+        if (!rejectionReason.trim()) {
+            toast.error("Please provide a rejection reason");
+            return;
+        }
+
+        try {
+            await api.post(`/admin/teachers/${teacherToReject._id}/reject`, {
+                reason: rejectionReason
+            });
+            toast.success("Teacher rejected successfully");
+            setShowRejectModal(false);
+            setTeacherToReject(null);
+            fetchTeachers();
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to reject teacher");
         }
     };
 
@@ -290,22 +332,46 @@ const Teachers = () => {
                                             {format(new Date(teacher.createdAt), 'MMM dd, yyyy')}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium flex justify-start items-center gap-2">
+                                            {/* Approve Button */}
+                                            {teacher.teacher?.status !== 'approved' && (
+                                                <button
+                                                    onClick={() => handleApprove(teacher._id)}
+                                                    className="p-1 rounded-full text-green-600 hover:bg-green-50 transition-colors"
+                                                    title="Approve"
+                                                >
+                                                    <FiCheckCircle size={20} />
+                                                </button>
+                                            )}
+
+                                            {/* Reject Button */}
+                                            {teacher.teacher?.status !== 'rejected' && (
+                                                <button
+                                                    onClick={() => handleRejectClick(teacher)}
+                                                    className="p-1 rounded-full text-red-600 hover:bg-red-50 transition-colors"
+                                                    title="Reject"
+                                                >
+                                                    <FiX size={20} />
+                                                </button>
+                                            )}
+
                                             <button
                                                 onClick={() => {
                                                     setSelectedTeacher(teacher);
                                                     setShowModal(true);
                                                 }}
-                                                className="text-indigo-600 hover:text-indigo-900 hover:underline transition-colors cursor-pointer"
+                                                className="p-1 rounded-full text-indigo-600 hover:bg-indigo-50 transition-colors"
+                                                title="View Details"
                                             >
-                                                <FiEye size={24} />
+                                                <FiEye size={20} />
                                             </button>
                                             <button
                                                 onClick={() => {
                                                     handleDeleteTeacher(teacher._id)
                                                 }}
-                                                className="text-indigo-600 hover:text-indigo-900 hover:underline transition-colors cursor-pointer"
+                                                className="p-1 rounded-full text-red-600 hover:bg-red-50 transition-colors"
+                                                title="Delete"
                                             >
-                                                <FiTrash2 color='red' size={24} />
+                                                <FiTrash2 size={20} />
                                             </button>
                                         </td>
                                     </tr>
@@ -645,6 +711,39 @@ const Teachers = () => {
                                     Print
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rejection Modal */}
+            {showRejectModal && (
+                <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4">Reject Teacher Request</h3>
+                        <p className="text-gray-600 mb-4">Please provide a reason for rejecting this teacher:</p>
+
+                        <textarea
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 mb-4"
+                            rows="4"
+                            placeholder="Reason for rejection..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                        />
+
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setShowRejectModal(false)}
+                                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmReject}
+                                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            >
+                                Confirm Reject
+                            </button>
                         </div>
                     </div>
                 </div>

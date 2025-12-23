@@ -39,21 +39,22 @@ const FindTutors = () => {
     const tutorLoad = async () => {
       try {
         setLoading(true);
-        const res = await api.get("/social/teachers");
-        console.log("FindTutors: API Response:", res);
+        // Add pagination parameters as seen in test.json
+        const res = await api.get("/social/teachers?page=1&limit=10");
 
-        // Robust data extraction
         let extractedDocs = [];
-        if (Array.isArray(res)) {
-          extractedDocs = res;
-        } else if (res?.response?.data?.docs && Array.isArray(res.response.data.docs)) {
+
+        // Structure confirmed from test.json: res.response.data.docs
+        if (res?.response?.data?.docs && Array.isArray(res.response.data.docs)) {
           extractedDocs = res.response.data.docs;
-        } else if (res?.data?.docs && Array.isArray(res.data.docs)) {
+        }
+        // Fallbacks for other possible structures
+        else if (res?.data?.docs && Array.isArray(res.data.docs)) {
           extractedDocs = res.data.docs;
         } else if (res?.docs && Array.isArray(res.docs)) {
           extractedDocs = res.docs;
-        } else if (res?.response?.data && Array.isArray(res.response.data)) {
-          extractedDocs = res.response.data;
+        } else if (Array.isArray(res)) {
+          extractedDocs = res;
         } else if (res?.data && Array.isArray(res.data)) {
           extractedDocs = res.data;
         }
