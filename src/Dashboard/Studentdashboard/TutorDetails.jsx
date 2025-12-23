@@ -79,6 +79,30 @@ export default function TutorDetails() {
     }
   };
 
+  const [isBooked, setIsBooked] = useState(false);
+
+  useEffect(() => {
+    const checkBookingStatus = async () => {
+      try {
+        const res = await api.get('/booking/student?limit=100'); // Fetch enough to cover recent bookings
+        const bookings = res?.response?.data?.docs || [];
+
+        // Check if any booking matches the current teacher ID
+        const hasBooking = bookings.some(booking =>
+          booking.teacherId === id || booking.teacher?._id === id
+        );
+
+        setIsBooked(hasBooking);
+      } catch (error) {
+        console.error("Error checking booking status:", error);
+      }
+    };
+
+    if (id) {
+      checkBookingStatus();
+    }
+  }, [id]);
+
   console.log(tutorData)
 
   return (
@@ -261,17 +285,19 @@ export default function TutorDetails() {
         </div>
         <button
           onClick={handleBooking}
-          disabled={isBooking}
-          className="w-full mt-5 py-3 text-white font-medium rounded-lg 
-            bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5]
-            disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          disabled={isBooking || isBooked}
+          className={`w-full mt-5 py-3 text-white font-medium rounded-lg cursor-pointer flex items-center justify-center gap-2
+            ${isBooked
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5] disabled:opacity-70 disabled:cursor-not-allowed'
+            }`}
         >
           {isBooking ? (
             <>
               <Spinner size="small" showText={false} fullScreen={false} className="text-white" />
               Processing...
             </>
-          ) : 'Book Now'}
+          ) : isBooked ? 'Booked' : 'Book Now'}
         </button>
         <button onClick={() => handleMessageButton()} className="w-full cursor-pointer mt-5 py-3 text-white font-medium rounded-lg 
             bg-gradient-to-r from-[#6657E2] via-[#903CD1] to-[#903CD1]">
