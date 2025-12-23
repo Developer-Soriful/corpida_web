@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
-import { FiCamera, FiUser, FiCalendar, FiPhone, FiGlobe, FiBook, FiDollarSign, FiClock, FiCheck } from "react-icons/fi";
+import { FiCamera, FiUser, FiCheck } from "react-icons/fi";
 import { useAuth } from "../context/UseAuth";
 import api, { getImageUrl } from "../services/api";
 import Spinner from "../Components/Spinner";
@@ -22,10 +22,7 @@ const TeacherCompleteProfile = () => {
         yearsOfTeachingExp: 0,
         subjectsTaught: [""],
         hourlyRate: 0,
-        availableTime: {
-            startTime: "09:00",
-            endTime: "17:00"
-        },
+        availableTime: { startTime: "09:00", endTime: "17:00" },
         availableDays: [],
         qualification: [{ title: "", institution: "", year: "" }],
         documents: []
@@ -34,11 +31,17 @@ const TeacherCompleteProfile = () => {
     const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
     useEffect(() => {
-        // If user is not a teacher, redirect to home
-        if (user?.role !== 'teacher') {
-            navigate('/');
-        }
+        if (user?.role !== 'teacher') navigate('/');
     }, [user, navigate]);
+
+    const toBackendIso = (timeStr) => {
+        if (!timeStr) return new Date().toISOString();
+        let date = new Date();
+        const [h, m] = timeStr.split(':');
+        if (h === undefined || m === undefined) return new Date().toISOString();
+        date.setHours(parseInt(h), parseInt(m), 0, 0);
+        return date.toISOString();
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -48,10 +51,7 @@ const TeacherCompleteProfile = () => {
     const handleNestedInputChange = (parent, name, value) => {
         setFormData(prev => ({
             ...prev,
-            [parent]: {
-                ...prev[parent],
-                [name]: value
-            }
+            [parent]: { ...prev[parent], [name]: value }
         }));
     };
 
@@ -61,10 +61,7 @@ const TeacherCompleteProfile = () => {
             ...updatedQualifications[index],
             [field]: field === 'year' ? parseInt(value) || '' : value
         };
-        setFormData(prev => ({
-            ...prev,
-            qualification: updatedQualifications
-        }));
+        setFormData(prev => ({ ...prev, qualification: updatedQualifications }));
     };
 
     const addQualification = () => {
@@ -85,16 +82,19 @@ const TeacherCompleteProfile = () => {
     const handleSubjectChange = (index, value) => {
         const updatedSubjects = [...formData.subjectsTaught];
         updatedSubjects[index] = value;
-        setFormData(prev => ({
-            ...prev,
-            subjectsTaught: updatedSubjects.filter(subject => subject.trim() !== "")
-        }));
+        setFormData(prev => ({ ...prev, subjectsTaught: updatedSubjects }));
     };
 
     const addSubject = () => {
+        setFormData(prev => ({ ...prev, subjectsTaught: [...prev.subjectsTaught, ""] }));
+    };
+
+    const removeSubject = (index) => {
+        const updatedSubjects = [...formData.subjectsTaught];
+        updatedSubjects.splice(index, 1);
         setFormData(prev => ({
             ...prev,
-            subjectsTaught: [...prev.subjectsTaught, ""]
+            subjectsTaught: updatedSubjects.length > 0 ? updatedSubjects : [""]
         }));
     };
 
@@ -103,32 +103,37 @@ const TeacherCompleteProfile = () => {
             const updatedDays = prev.availableDays.includes(day)
                 ? prev.availableDays.filter(d => d !== day)
                 : [...prev.availableDays, day];
-            return {
-                ...prev,
-                availableDays: updatedDays
-            };
+            return { ...prev, availableDays: updatedDays };
         });
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                toast.error('Please select a valid image file (JPG, PNG, or GIF)');
+                return;
+            }
             if (file.size > 2 * 1024 * 1024) {
                 toast.error("Image size too large. Max 2MB.");
                 return;
             }
-            setFormData(prev => ({ ...prev, avatar: file }));
-            setImagePreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result;
+                setFormData(prev => ({ ...prev, avatar: base64String }));
+                setImagePreview(base64String);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
     const handleDocumentUpload = (e) => {
         const files = Array.from(e.target.files);
-        // Validate file types and sizes
         const validFiles = files.filter(file => {
             const isValidType = ['application/pdf', 'image/jpeg', 'image/png'].includes(file.type);
-            const isValidSize = file.size <= 5 * 1024 * 1024; // 5MB max
-            
+            const isValidSize = file.size <= 5 * 1024 * 1024;
             if (!isValidType) {
                 toast.error(`Invalid file type: ${file.name}. Only PDF, JPG, and PNG are allowed.`);
                 return false;
@@ -139,20 +144,13 @@ const TeacherCompleteProfile = () => {
             }
             return true;
         });
-
         if (validFiles.length > 0) {
-            setFormData(prev => ({
-                ...prev,
-                documents: [...prev.documents, ...validFiles]
-            }));
+            setFormData(prev => ({ ...prev, documents: [...prev.documents, ...validFiles] }));
         }
     };
 
     const removeDocument = (index) => {
-        setFormData(prev => ({
-            ...prev,
-            documents: prev.documents.filter((_, i) => i !== index)
-        }));
+        setFormData(prev => ({ ...prev, documents: prev.documents.filter((_, i) => i !== index) }));
     };
 
     const handleSubmit = async (e) => {
@@ -162,51 +160,76 @@ const TeacherCompleteProfile = () => {
         try {
             const formDataPayload = new FormData();
 
-            // Basic info
-            if (formData.phoneNumber) formDataPayload.append('phoneNumber', Number(formData.phoneNumber));
+            if (formData.phoneNumber) formDataPayload.append('phoneNumber', formData.phoneNumber);
             if (formData.countryCode) formDataPayload.append('countryCode', formData.countryCode);
             if (formData.dateOfBirth) formDataPayload.append('dateOfBirth', formData.dateOfBirth);
             if (formData.bio) formDataPayload.append('bio', formData.bio);
             if (formData.avatar) formDataPayload.append('avatar', formData.avatar);
 
-            // Teacher specific fields
-            formDataPayload.append('yearsOfTeachingExp', formData.yearsOfTeachingExp);
-            formDataPayload.append('subjectsTaught', JSON.stringify(formData.subjectsTaught));
-            formDataPayload.append('hourlyRate', formData.hourlyRate);
-            formDataPayload.append('availableTime', JSON.stringify(formData.availableTime));
-            formDataPayload.append('availableDays', JSON.stringify(formData.availableDays));
-            formDataPayload.append('qualification', JSON.stringify(formData.qualification));
-            
-            // Append documents
-            formData.documents.forEach((doc, index) => {
+            formDataPayload.append('teacher[yearsOfTeachingExp]', formData.yearsOfTeachingExp || 0);
+            formDataPayload.append('teacher[hourlyRate]', Number(formData.hourlyRate) || 0);
+            formDataPayload.append('teacher[content]', formData.bio || 'No content provided');
+            formDataPayload.append('teacher[availableTime][startTime]', toBackendIso(formData.availableTime.startTime));
+            formDataPayload.append('teacher[availableTime][endTime]', toBackendIso(formData.availableTime.endTime));
+
+            formData.subjectsTaught
+                .filter(subject => subject.trim() !== "")
+                .forEach((subject, index) => {
+                    formDataPayload.append(`teacher[subjectsTaught][${index}]`, subject.trim());
+                });
+
+            formData.availableDays.forEach((day, index) => {
+                formDataPayload.append(`teacher[availableDays][${index}]`, day);
+            });
+
+            formData.qualification
+                .filter(qual => qual.title && qual.institution)
+                .forEach((qual, index) => {
+                    formDataPayload.append(`teacher[qualification][${index}][title]`, qual.title.trim() || 'Not specified');
+                    formDataPayload.append(`teacher[qualification][${index}][institution]`, qual.institution.trim() || 'Not specified');
+                    const yearValue = qual.year && Number.isInteger(parseInt(qual.year))
+                        ? parseInt(qual.year)
+                        : new Date().getFullYear();
+                    formDataPayload.append(`teacher[qualification][${index}][year]`, yearValue);
+                });
+
+            formData.documents.forEach((doc) => {
                 formDataPayload.append(`documents`, doc);
             });
 
+            console.log('FormData entries:');
+            for (let pair of formDataPayload.entries()) {
+                console.log(pair[0], pair[1]);
+            }
+
             const response = await api.patch("/user/self/update", formDataPayload, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            // Update local user context
-            if (response.response?.data) {
-                setUser(response.response.data);
+            const updatedUser = response.response?.data || response.data?.response?.data || response.data;
+
+            if (updatedUser) {
+                setUser(updatedUser);
+                toast.success("Profile completed successfully!");
+                navigate("/");
+            } else {
+                console.warn('Unexpected response structure:', response);
                 toast.success("Profile completed successfully!");
                 navigate("/");
             }
 
         } catch (error) {
             console.error("Profile update error:", error);
-            const msg = error.response?.data?.message || "Failed to update profile";
-            toast.error(msg);
+            if (error.response) {
+                console.error("Server Response Error:", error.response.data);
+            }
+            toast.error(error.response?.data?.message || "Failed to update profile. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) {
-        return <Spinner />;
-    }
+    if (loading) return <Spinner />;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -223,18 +246,13 @@ const TeacherCompleteProfile = () => {
                         {/* Basic Information */}
                         <div className="border-b border-gray-200 pb-8">
                             <h3 className="text-lg font-medium text-gray-900 mb-6">Basic Information</h3>
-                            
+
                             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                {/* Profile Picture */}
                                 <div className="sm:col-span-6">
                                     <div className="flex items-center">
                                         <div className="relative">
                                             {imagePreview ? (
-                                                <img
-                                                    className="h-24 w-24 rounded-full object-cover"
-                                                    src={imagePreview}
-                                                    alt="Profile"
-                                                />
+                                                <img className="h-24 w-24 rounded-full object-cover" src={imagePreview} alt="Profile" />
                                             ) : (
                                                 <div className="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center">
                                                     <FiUser className="h-12 w-12 text-gray-400" />
@@ -258,32 +276,22 @@ const TeacherCompleteProfile = () => {
                                     </div>
                                 </div>
 
-                                {/* Bio */}
                                 <div className="sm:col-span-6">
-                                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
-                                        Bio
-                                    </label>
-                                    <div className="mt-1">
-                                        <textarea
-                                            id="bio"
-                                            name="bio"
-                                            rows={3}
-                                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
-                                            placeholder="Tell us about yourself and your teaching experience..."
-                                            value={formData.bio}
-                                            onChange={handleInputChange}
-                                        />
-                                    </div>
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        A brief introduction about yourself and your teaching philosophy.
-                                    </p>
+                                    <label htmlFor="bio" className="block text-sm font-medium text-gray-700">Bio</label>
+                                    <textarea
+                                        id="bio"
+                                        name="bio"
+                                        rows={3}
+                                        className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
+                                        placeholder="Tell us about yourself and your teaching experience..."
+                                        value={formData.bio}
+                                        onChange={handleInputChange}
+                                    />
+                                    <p className="mt-2 text-sm text-gray-500">A brief introduction about yourself and your teaching philosophy.</p>
                                 </div>
 
-                                {/* Contact Information */}
                                 <div className="sm:col-span-3">
-                                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
-                                        Phone Number
-                                    </label>
+                                    <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
                                     <div className="mt-1 flex rounded-md shadow-sm">
                                         <select
                                             id="countryCode"
@@ -292,9 +300,9 @@ const TeacherCompleteProfile = () => {
                                             onChange={handleInputChange}
                                             className="focus:ring-indigo-500 focus:border-indigo-500 h-10 block w-20 pl-3 pr-8 py-2 text-sm border-gray-300 bg-gray-50 rounded-l-md border-r-0"
                                         >
+                                            <option value="+880">+880 (BD)</option>
                                             <option value="+1">+1 (US)</option>
                                             <option value="+44">+44 (UK)</option>
-                                            <option value="+880">+880 (BD)</option>
                                             <option value="+91">+91 (IN)</option>
                                         </select>
                                         <input
@@ -303,26 +311,22 @@ const TeacherCompleteProfile = () => {
                                             id="phoneNumber"
                                             value={formData.phoneNumber}
                                             onChange={handleInputChange}
-                                            className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300"
+                                            className="focus:ring-indigo-500 focus:border-indigo-500 flex-1 block w-full rounded-none rounded-r-md sm:text-sm border-gray-300 p-2"
                                             placeholder="123-456-7890"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="sm:col-span-3">
-                                    <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">
-                                        Date of Birth
-                                    </label>
-                                    <div className="mt-1">
-                                        <input
-                                            type="date"
-                                            name="dateOfBirth"
-                                            id="dateOfBirth"
-                                            value={formData.dateOfBirth}
-                                            onChange={handleInputChange}
-                                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
-                                        />
-                                    </div>
+                                    <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                                    <input
+                                        type="date"
+                                        name="dateOfBirth"
+                                        id="dateOfBirth"
+                                        value={formData.dateOfBirth}
+                                        onChange={handleInputChange}
+                                        className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -330,31 +334,23 @@ const TeacherCompleteProfile = () => {
                         {/* Teaching Information */}
                         <div className="border-b border-gray-200 pb-8">
                             <h3 className="text-lg font-medium text-gray-900 mb-6">Teaching Information</h3>
-                            
+
                             <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                {/* Years of Experience */}
                                 <div className="sm:col-span-3">
-                                    <label htmlFor="yearsOfTeachingExp" className="block text-sm font-medium text-gray-700">
-                                        Years of Teaching Experience
-                                    </label>
-                                    <div className="mt-1">
-                                        <input
-                                            type="number"
-                                            name="yearsOfTeachingExp"
-                                            id="yearsOfTeachingExp"
-                                            min="0"
-                                            value={formData.yearsOfTeachingExp}
-                                            onChange={handleInputChange}
-                                            className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
-                                        />
-                                    </div>
+                                    <label htmlFor="yearsOfTeachingExp" className="block text-sm font-medium text-gray-700">Years of Teaching Experience</label>
+                                    <input
+                                        type="number"
+                                        name="yearsOfTeachingExp"
+                                        id="yearsOfTeachingExp"
+                                        min="0"
+                                        value={formData.yearsOfTeachingExp}
+                                        onChange={handleInputChange}
+                                        className="mt-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2"
+                                    />
                                 </div>
 
-                                {/* Hourly Rate */}
                                 <div className="sm:col-span-3">
-                                    <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700">
-                                        Hourly Rate (USD)
-                                    </label>
+                                    <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700">Hourly Rate (USD)</label>
                                     <div className="mt-1 relative rounded-md shadow-sm">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <span className="text-gray-500 sm:text-sm">$</span>
@@ -373,11 +369,8 @@ const TeacherCompleteProfile = () => {
                                     </div>
                                 </div>
 
-                                {/* Subjects Taught */}
                                 <div className="sm:col-span-6">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Subjects You Teach
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Subjects You Teach</label>
                                     <div className="space-y-2">
                                         {formData.subjectsTaught.map((subject, index) => (
                                             <div key={index} className="flex space-x-2">
@@ -391,14 +384,7 @@ const TeacherCompleteProfile = () => {
                                                 {formData.subjectsTaught.length > 1 && (
                                                     <button
                                                         type="button"
-                                                        onClick={() => {
-                                                            const updatedSubjects = [...formData.subjectsTaught];
-                                                            updatedSubjects.splice(index, 1);
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                subjectsTaught: updatedSubjects.length > 0 ? updatedSubjects : [""]
-                                                            }));
-                                                        }}
+                                                        onClick={() => removeSubject(index)}
                                                         className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                                     >
                                                         Remove
@@ -416,38 +402,28 @@ const TeacherCompleteProfile = () => {
                                     </div>
                                 </div>
 
-                                {/* Available Days */}
                                 <div className="sm:col-span-6">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Available Days
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Available Days</label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {daysOfWeek.map((day) => (
-                                            <div key={day} className="flex items-center">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => toggleDay(day)}
-                                                    className={`inline-flex items-center px-3 py-2 rounded-md text-sm font-medium w-full text-center ${
-                                                        formData.availableDays.includes(day)
-                                                            ? 'bg-indigo-100 text-indigo-800 border border-indigo-300'
-                                                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                            <button
+                                                key={day}
+                                                type="button"
+                                                onClick={() => toggleDay(day)}
+                                                className={`inline-flex items-center justify-center px-3 py-2 rounded-md text-sm font-medium w-full ${formData.availableDays.includes(day)
+                                                    ? 'bg-indigo-100 text-indigo-800 border border-indigo-300'
+                                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                                     }`}
-                                                >
-                                                    {formData.availableDays.includes(day) && (
-                                                        <FiCheck className="mr-1.5 h-4 w-4 text-indigo-600" />
-                                                    )}
-                                                    {day.slice(0, 3)}
-                                                </button>
-                                            </div>
+                                            >
+                                                {formData.availableDays.includes(day) && <FiCheck className="mr-1.5 h-4 w-4 text-indigo-600" />}
+                                                {day.slice(0, 3)}
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
 
-                                {/* Available Time */}
                                 <div className="sm:col-span-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Available From
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Available From</label>
                                     <input
                                         type="time"
                                         value={formData.availableTime.startTime}
@@ -456,9 +432,7 @@ const TeacherCompleteProfile = () => {
                                     />
                                 </div>
                                 <div className="sm:col-span-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Available Until
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Available Until</label>
                                     <input
                                         type="time"
                                         value={formData.availableTime.endTime}
@@ -472,7 +446,7 @@ const TeacherCompleteProfile = () => {
                         {/* Qualifications */}
                         <div className="border-b border-gray-200 pb-8">
                             <h3 className="text-lg font-medium text-gray-900 mb-6">Qualifications</h3>
-                            
+
                             <div className="space-y-6">
                                 {formData.qualification.map((qual, index) => (
                                     <div key={index} className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
@@ -488,11 +462,9 @@ const TeacherCompleteProfile = () => {
                                                 </button>
                                             )}
                                         </div>
-                                        
+
                                         <div className="sm:col-span-6">
-                                            <label htmlFor={`qual-title-${index}`} className="block text-sm font-medium text-gray-700">
-                                                Degree/Title
-                                            </label>
+                                            <label htmlFor={`qual-title-${index}`} className="block text-sm font-medium text-gray-700">Degree/Title</label>
                                             <input
                                                 type="text"
                                                 id={`qual-title-${index}`}
@@ -504,9 +476,7 @@ const TeacherCompleteProfile = () => {
                                         </div>
 
                                         <div className="sm:col-span-4">
-                                            <label htmlFor={`qual-institution-${index}`} className="block text-sm font-medium text-gray-700">
-                                                Institution
-                                            </label>
+                                            <label htmlFor={`qual-institution-${index}`} className="block text-sm font-medium text-gray-700">Institution</label>
                                             <input
                                                 type="text"
                                                 id={`qual-institution-${index}`}
@@ -518,9 +488,7 @@ const TeacherCompleteProfile = () => {
                                         </div>
 
                                         <div className="sm:col-span-2">
-                                            <label htmlFor={`qual-year-${index}`} className="block text-sm font-medium text-gray-700">
-                                                Year
-                                            </label>
+                                            <label htmlFor={`qual-year-${index}`} className="block text-sm font-medium text-gray-700">Year</label>
                                             <input
                                                 type="number"
                                                 id={`qual-year-${index}`}
@@ -548,36 +516,19 @@ const TeacherCompleteProfile = () => {
                         {/* Documents */}
                         <div className="border-b border-gray-200 pb-8">
                             <h3 className="text-lg font-medium text-gray-900 mb-6">Supporting Documents</h3>
-                            
+
                             <div className="space-y-4">
-                                <div className="flex items-center justify-center w-full">
-                                    <label className="flex flex-col w-full h-32 border-4 border-dashed hover:bg-gray-50 hover:border-gray-300">
-                                        <div className="flex flex-col items-center justify-center pt-7">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="w-12 h-12 text-gray-400 group-hover:text-gray-600"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                            >
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                            <p className="pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600">
-                                                Upload certificates, degrees, or other supporting documents (PDF, JPG, PNG)
-                                            </p>
-                                        </div>
-                                        <input 
-                                            type="file" 
-                                            className="opacity-0" 
-                                            onChange={handleDocumentUpload}
-                                            multiple
-                                            accept=".pdf,.jpg,.jpeg,.png"
-                                        />
-                                    </label>
-                                </div>
+                                <label className="flex flex-col w-full h-32 border-4 border-dashed hover:bg-gray-50 hover:border-gray-300 cursor-pointer rounded-lg">
+                                    <div className="flex flex-col items-center justify-center pt-7">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                                        </svg>
+                                        <p className="pt-1 text-sm tracking-wider text-gray-400">
+                                            Upload certificates, degrees, or other supporting documents (PDF, JPG, PNG)
+                                        </p>
+                                    </div>
+                                    <input type="file" className="opacity-0" onChange={handleDocumentUpload} multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                </label>
 
                                 {formData.documents.length > 0 && (
                                     <div className="mt-4">
@@ -585,9 +536,7 @@ const TeacherCompleteProfile = () => {
                                         <ul className="space-y-2">
                                             {formData.documents.map((doc, index) => (
                                                 <li key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                                                    <span className="text-sm text-gray-600 truncate">
-                                                        {doc.name || `Document ${index + 1}`}
-                                                    </span>
+                                                    <span className="text-sm text-gray-600 truncate">{doc.name || `Document ${index + 1}`}</span>
                                                     <button
                                                         type="button"
                                                         onClick={() => removeDocument(index)}
@@ -605,43 +554,30 @@ const TeacherCompleteProfile = () => {
                             </div>
                         </div>
 
-                        {/* Terms and Conditions */}
+                        {/* Terms */}
                         <div className="flex items-start">
-                            <div className="flex items-center h-5">
-                                <input
-                                    id="terms"
-                                    name="terms"
-                                    type="checkbox"
-                                    className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                    required
-                                />
-                            </div>
-                            <div className="ml-3 text-sm">
-                                <label htmlFor="terms" className="font-medium text-gray-700">
-                                    I agree to the <a href="/terms" className="text-indigo-600 hover:text-indigo-500">Terms of Service</a> and{' '}
-                                    <a href="/privacy" className="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
-                                </label>
-                            </div>
+                            <input id="terms" name="terms" type="checkbox" className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" required />
+                            <label htmlFor="terms" className="ml-3 text-sm font-medium text-gray-700">
+                                I agree to the <a href="/terms" className="text-indigo-600 hover:text-indigo-500">Terms of Service</a> and{' '}
+                                <a href="/privacy" className="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
+                            </label>
                         </div>
-
-                        {/* Submit Button */}
-                        <div className="pt-5">
-                            <div className="flex justify-end">
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/')}
-                                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {loading ? 'Saving...' : 'Complete Profile'}
-                                </button>
-                            </div>
+                        {/* Submit */}
+                        <div className="pt-5 flex justify-end space-x-3">
+                            <button
+                                type="button"
+                                onClick={() => navigate('/')}
+                                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {loading ? 'Saving...' : 'Complete Profile'}
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -649,5 +585,4 @@ const TeacherCompleteProfile = () => {
         </div>
     );
 };
-
 export default TeacherCompleteProfile;
