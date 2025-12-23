@@ -38,9 +38,6 @@ export default function ToutorEditProfile() {
   const [subjects, setSubjects] = useState([]);
   const [newSubject, setNewSubject] = useState('');
 
-  // Files
-  const [teacherDocuments, setTeacherDocuments] = useState([]); // File objects
-
   const formRef = useRef(null);
 
   useEffect(() => {
@@ -153,19 +150,12 @@ export default function ToutorEditProfile() {
 
     const apiFormData = new FormData();
 
-    // Use Helper to recursive append
-    // Note: arrays like subjectsTaught will be appended as 'teacher[subjectsTaught][0]', etc.
-    // or 'teacher[subjectsTaught][]' depending on backend. objectToFormData does indexed 'key[0]'.
     objectToFormData(payload, apiFormData);
 
     // Files
     if (selectedImage) {
       apiFormData.append('avatar', selectedImage);
     }
-
-    // Docs (if any new ones selected - logic needs file input for this)
-    // For now assuming existing flow or new implementation for file inputs if required
-    // Skipping documents array upload in this iteration unless explicitly requested via UI input
 
     try {
       const res = await api.patch("/user/self/update", apiFormData, {

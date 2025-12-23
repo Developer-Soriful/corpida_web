@@ -29,7 +29,8 @@ export default function TutorMyProfile() {
         availableDays: user?.teacher?.availableDays?.join(', ') || '',
         qualification: user?.teacher?.qualification?.map(q =>
             `${q.title} - ${q.institution} (${q.year})`
-        ).join('\n') || ''
+        ).join('\n') || '',
+        content: user?.teacher?.content || ''
     });
 
     // this is for loading spinner 
@@ -68,19 +69,21 @@ export default function TutorMyProfile() {
     };
 
     const toBackendIso = (timeStr, originalIso) => {
-        if (!timeStr) return originalIso;
-        // Construct a base date. Use original ISO date if valid, otherwise today/future.
+        if (!timeStr) {
+            // If originalIso is valid, return it. Otherwise undefined.
+            return (originalIso && originalIso !== '' && originalIso.includes('T')) ? originalIso : undefined;
+        }
+
+        // Construct a base date. Use original ISO date if valid, otherwise today.
         let date = new Date();
         if (originalIso && originalIso.includes('T')) {
             const parsed = new Date(originalIso);
             if (!isNaN(parsed.getTime())) date = parsed;
-        } else {
-            // Fallback if no original date, use a fixed future date like in Postman? 
-            // Or just today. Postman had 2025-01-01. Let's stick to the Date object we have.
-            // If original was null, we use today.
         }
 
         const [h, m] = timeStr.split(':');
+        if (h === undefined || m === undefined) return undefined;
+
         date.setHours(parseInt(h), parseInt(m), 0, 0);
         return date.toISOString();
     };
@@ -134,7 +137,8 @@ export default function TutorMyProfile() {
             availableDays: user?.teacher?.availableDays?.join(', ') || '',
             qualification: user?.teacher?.qualification?.map(q =>
                 `${q.title} - ${q.institution} (${q.year})`
-            ).join('\n') || ''
+            ).join('\n') || '',
+            content: user?.teacher?.content || ''
         }));
     };
 
@@ -157,7 +161,8 @@ export default function TutorMyProfile() {
             availableDays: user?.teacher?.availableDays?.join(', ') || '',
             qualification: user?.teacher?.qualification?.map(q =>
                 `${q.title} - ${q.institution} (${q.year})`
-            ).join('\n') || ''
+            ).join('\n') || '',
+            content: user?.teacher?.content || ''
         });
     };
 
@@ -182,12 +187,11 @@ export default function TutorMyProfile() {
                 name: formData.name,
                 avatar: formData.avatar || user?.avatar,
                 phoneNumber: Number(formData.phoneNumber),
-                dateOfBirth: user?.dateOfBirth || null,
                 countryCode: formData.countryCode,
                 bio: formData.bio,
                 teacher: {
                     hourlyRate: Number(formData.hourlyRate),
-                    content: user?.teacher?.content || '',
+                    content: formData.content || formData.bio || 'No content provided',
                     yearsOfTeachingExp: user?.teacher?.yearsOfTeachingExp || 0,
                     subjectsTaught: subjectsArray,
                     availableDays: daysArray,
@@ -430,6 +434,24 @@ export default function TutorMyProfile() {
                             ) : (
                                 <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
                                     {user?.bio}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* About Me / Content */}
+                        <div>
+                            <label className="block mb-1 text-gray-700 text-sm">About Me</label>
+                            {isEditing ? (
+                                <textarea
+                                    name="content"
+                                    value={formData.content}
+                                    onChange={handleChange}
+                                    className="w-full h-24 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm resize-none"
+                                    placeholder="More detailed introduction..."
+                                />
+                            ) : (
+                                <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
+                                    {user?.teacher?.content || 'No detailed content added.'}
                                 </p>
                             )}
                         </div>

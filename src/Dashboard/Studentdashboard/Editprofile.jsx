@@ -50,14 +50,20 @@ export default function EditProfile() {
     setIsSaving(true);
     try {
       const formData = new FormData(formRef.current)
+      const phoneStr = formData.get('phoneNumber')?.toString().trim();
+      const nameStr = formData.get('name')?.toString().trim();
+      const bioStr = formData.get('bio')?.toString().trim();
 
       const updateData = {
-        name: formData.get('name'),
-        bio: formData.get('bio'),
-        phoneNumber: formData.get('phoneNumber'),
+        name: nameStr || undefined,
+        bio: bioStr || undefined,
+        phoneNumber: phoneStr ? Number(phoneStr) : undefined,
         dateOfBirth: dob ? new Date(dob).toISOString() : null,
         countryCode: selectedCountryCode
       };
+
+      // Remove undefined keys
+      Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
       // Construct API FormData
       const apiFormData = new FormData();

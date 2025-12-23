@@ -18,7 +18,6 @@ import PaymentHistory from "../Dashboard/Studentdashboard/PaymentHistory";
 import Messages from "../Dashboard/Studentdashboard/Messages";
 import Support from "../Dashboard/Studentdashboard/Support";
 import MyProfile from "../Dashboard/Studentdashboard/MyProfile";
-import EditProfile from "../Dashboard/Studentdashboard/Editprofile";
 import TutorDetails from "../Dashboard/Studentdashboard/TutorDetails";
 import PaymentUI from "../Dashboard/Studentdashboard/PaymentUI";
 import SendMessages from "../Dashboard/Studentdashboard/SendMessages";
@@ -142,10 +141,7 @@ export const router = createBrowserRouter([
                 path: 'myprofile',
                 Component: MyProfile
             },
-            {
-                path: 'editprofile',
-                Component: EditProfile
-            },
+
             {
                 path: 'tutordetails/:id',
                 Component: TutorDetails
