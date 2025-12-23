@@ -227,7 +227,8 @@ export default function TutorMyProfile() {
                     startTime: toBackendIso(formData.availableTime.startTime, user?.teacher?.availableTime?.startTime) || new Date().toISOString(),
                     endTime: toBackendIso(formData.availableTime.endTime, user?.teacher?.availableTime?.endTime) || new Date().toISOString()
                 },
-                content: formData.content || formData.bio || 'No content provided'
+                content: formData.content || formData.bio || 'No content provided',
+                documents: Array.isArray(user?.teacher?.documents) ? user.teacher.documents : []
             };
 
             // Add arrays separately to ensure proper formatting
