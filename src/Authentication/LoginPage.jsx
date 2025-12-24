@@ -10,22 +10,30 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { signin } = useAuth()
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const res = await signin(email, password)
-    console.log(res.response)
-    const role = res.response.data.role
-    // 👉 role based redirect
-    if (role === "student") {
-      navigate("/dashboard");
-    } else if (role === "teacher") {
-      navigate("/toturdashbord");
-    } else {
-      navigate("/");
+
+    try {
+      const res = await signin(email, password);
+      console.log(res.response);
+      const role = res.response.data.role;
+
+      // 👉 role based redirect
+      if (role === "student") {
+        navigate("/dashboard");
+      } else if (role === "teacher") {
+        navigate("/toturdashbord");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      // Optionally show an error message to the user here
+    } finally {
+      setLoading(false);
     }
-
-
   };
 
   return (
@@ -39,12 +47,12 @@ const LoginPage = () => {
 
           <p className="text-sm text-[#585858] mt-3">
             Don't have an account?{" "}
-            <a
-              href="/signup"
+
+            <Link to="/signup"
               className="bg-gradient-to-r from-[#614EFE] to-[#7D359F] bg-clip-text text-transparent font-medium"
             >
               Register
-            </a>
+            </Link>
           </p>
         </div>
 
@@ -91,7 +99,7 @@ const LoginPage = () => {
         </form>
 
       </div>
-    </div>
+    </div >
   );
 };
 
