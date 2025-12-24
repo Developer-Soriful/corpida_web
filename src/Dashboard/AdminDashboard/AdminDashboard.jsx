@@ -701,9 +701,6 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
-
-                {/* All other pages show here */}
-                <Outlet />
                 {/* Transaction Details Modal */}
                 <TransactionDetailsModal />
                 {/* Loading overlay for transaction details */}
