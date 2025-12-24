@@ -228,7 +228,7 @@ export const router = createBrowserRouter([
         ),
         children: [
             {
-                index: true,
+                path: 'earnings', 
                 Component: Earnings
             },
             {
@@ -238,10 +238,6 @@ export const router = createBrowserRouter([
             {
                 path: 'notification',
                 Component: AdminNotification
-            },
-            {
-                path: 'earnings',
-                Component: Earnings
             },
             {
                 path: 'students',

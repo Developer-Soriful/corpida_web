@@ -336,7 +336,7 @@ const AdminDashboard = () => {
                                     </span>
 
                                     <span className="font-medium text-gray-800 w-full text-end">
-                                        #{selectedTransaction.transactionId.slice(0, 30)}
+                                        #{selectedTransaction.transactionId ? selectedTransaction.transactionId.slice(0, 30) : selectedTransaction._id?.slice(0, 30) || 'N/A'}
                                     </span>
                                 </div>
                             </div>
@@ -472,9 +472,8 @@ const AdminDashboard = () => {
                                     ${isActive ? "bg-white" : "hover:bg-white/10"}
                                     `}
                                 >
+
                                     <PiStudentThin
-
-
                                         size={18}
                                         className={`${isActive ? "text-transparent" : "text-white"}`}
                                         style={isActive ? { stroke: "url(#menuGradient)", fill: "url(#menuGradient)" } : {}}
@@ -701,6 +700,10 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {/* All other pages show here */}
+                <Outlet />
+
                 {/* Transaction Details Modal */}
                 <TransactionDetailsModal />
                 {/* Loading overlay for transaction details */}
