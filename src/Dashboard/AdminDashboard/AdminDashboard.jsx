@@ -553,13 +553,6 @@ const AdminDashboard = () => {
                                 </li>
                             )}
                         </NavLink>
-                        {/* Placeholder for future admin links */}
-                        {/* 
-                         <NavLink to="/admin/users">
-                            ... Users
-                         </NavLink>
-                         */}
-
                         <li onClick={handleLogout} className="text-red-300 hover:bg-white/10 cursor-pointer py-2.5 px-4 rounded-lg flex items-center space-x-3 mt-auto">
                             <FiLogOut size={18} /> <span>Log Out</span>
                         </li>
@@ -570,10 +563,10 @@ const AdminDashboard = () => {
 
 
             {/* ================= MAIN CONTENT ================= */}
-            <div className="flex-1 p-8 h-full overflow-y-auto custom-scrollbar">
+            <div className="flex-1 p-8 h-full overflow-y-auto custom-scrollbar ">
 
                 {/* TOPBAR */}
-                <div className="w-full bg-[#FFFFFF] shadow-md py-3 px-6 flex justify-between items-center rounded-2xl mb-6">
+                <div className=" sticky w-full bg-[#FFFFFF] shadow-md py-3 px-6 flex justify-between items-center rounded-2xl mb-6">
                     <div>
                         <h2 className="text-[20px] font-semibold bg-linear-to-r from-[#FFC30B] via-[#8113B5] to-[#8113B5] text-transparent bg-clip-text">
                             Admin Portal
