@@ -49,24 +49,24 @@ const Notification = () => {
     if (loading) return <Spinner text="Loading notifications..." />;
 
     return (
-        <div className="w-full min-h-screen bg-[#FFFFFF] p-8 rounded-2xl">
-            <div className="flex justify-between items-center mb-5">
-                <h2 className="text-[22px] font-semibold bg-linear-to-r from-[#6657E2] via-[#903CD1] to-[#7e0dd4] text-transparent bg-clip-text">
-                    Notification
+        <div className="w-full min-h-screen space-y-6">
+            <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                    Notifications
                 </h2>
                 {notifications.length > 0 && (
                     <button
                         onClick={handleClearAll}
-                        className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors"
+                        className="text-sm text-red-500 hover:text-red-600 font-medium transition-colors px-4 py-2 rounded-lg hover:bg-red-50"
                     >
                         Clear All
                     </button>
                 )}
             </div>
 
-            <div className="w-full h-px bg-[#C0C0C0] mt-2"></div>
+            <div className="h-px bg-gray-200"></div>
 
-            <div className="space-y-4 mt-5">
+            <div className="space-y-4">
                 {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-gray-400">
                         <FiBell size={48} className="mb-4 opacity-20" />
@@ -76,10 +76,10 @@ const Notification = () => {
                     notifications.map((notification) => (
                         <div
                             key={notification._id}
-                            className="bg-white rounded p-4 flex gap-4 items-start shadow-[0px_2px_8px_rgba(0,0,0,0.06)] group relative"
+                            className="bg-white rounded-xl p-4 flex gap-4 items-start shadow-sm hover:shadow-md transition-all duration-300 group relative border border-gray-100"
                         >
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md bg-[#F8F4FF]">
-                                <FiBell className="text-[#9B72E9] text-[20px]" />
+                            <div className="w-10 h-10 flex items-center justify-center rounded-xl bg-purple-50 shrink-0">
+                                <FiBell className="text-purple-600" size={20} />
                             </div>
 
                             <div className="flex-1">

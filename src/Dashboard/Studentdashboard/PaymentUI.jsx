@@ -105,11 +105,20 @@ function PaymentForm() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="min-h-screen flex items-center justify-center p-10">
-        <div className="bg-[#EBF1EC] p-10 rounded-xl shadow-md w-full max-w-3xl">
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 w-full max-w-2xl space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              Payment
+            </h2>
+            <p className="text-gray-500 text-sm">
+              Secure payment processing via Stripe
+            </p>
+          </div>
 
           {/* Payment Methods */}
-          <div className="flex gap-6 justify-center">
+          <div className="flex gap-4 justify-center">
             {methods.map((m) => (
               <div
                 key={m.id}
@@ -136,9 +145,9 @@ function PaymentForm() {
           </div>
 
           {/* Stripe Card Element */}
-          <div className="mt-8">
-            <label className="text-[#585858] text-sm font-medium">Card Information</label>
-            <div className="w-full border border-gray-300 rounded-lg mt-2 px-4 py-3">
+          <div className="space-y-2">
+            <label className="text-gray-700 text-sm font-medium">Card Information</label>
+            <div className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50/50">
               <CardElement
                 options={{
                   style: {
@@ -170,9 +179,10 @@ function PaymentForm() {
             type="submit"
             disabled={!stripe || loading}
             className="
-              w-full py-3 mt-8 text-white font-medium rounded-lg 
-              bg-gradient-to-r from-[#6A5AF9] via-[#8A3BE0] to-[#A536D4]
-              hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed
+              w-full py-4 text-white font-semibold rounded-xl 
+              bg-gradient-to-r from-[#6657E2] to-[#903CD1]
+              hover:shadow-lg hover:shadow-purple-500/25 active:scale-[0.98]
+              disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200
             "
           >
             {loading ? `Processing $${paymentAmount.toFixed(2)}...` : `Pay $${paymentAmount.toFixed(2)}`}

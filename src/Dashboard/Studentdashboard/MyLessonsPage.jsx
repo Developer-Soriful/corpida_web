@@ -34,7 +34,7 @@ export default function MyLessonsPage() {
           : "bg-[#E5E7EB] text-[#6B7280]";
 
     return (
-      <div className="w-full bg-white rounded-lg p-6 shadow-[0_2px_6px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-6 border border-gray-100">
+      <div className="w-full bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row items-center gap-6 border border-gray-100">
         <img
           src={teacherAvatar}
           alt="profile"
@@ -156,20 +156,22 @@ export default function MyLessonsPage() {
     return <Spinner text="Loading dashboard..." />
   }
   return (
-    <div className=" bg-[#F5FAF7] min-h-screen">
+    <div className="min-h-screen space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">My Lessons</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Manage your upcoming, past, and cancelled lessons.
+          </p>
+        </div>
 
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="text-[20px] font-semibold text-[#6B46C1]">My Lessons</h1>
-
-        <button className="bg-[#7C3AED] text-white px-4 py-1.5 rounded-lg flex items-center gap-2 text-[14px]">
+        <button className="bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium shadow-md hover:shadow-lg transition-all">
           All Lessons
         </button>
       </div>
 
-      <p className="text-gray-500 mb-6 text-[13px]">
-        Manage your upcoming, past, and cancelled lessons.
-      </p>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         {loading ? (
           <div className="flex justify-center py-10">
             <Spinner text="Fetching lessons..." />
@@ -187,7 +189,7 @@ export default function MyLessonsPage() {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="mt-6 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}

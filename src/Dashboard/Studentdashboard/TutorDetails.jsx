@@ -106,9 +106,10 @@ export default function TutorDetails() {
   console.log(tutorData)
 
   return (
-    <div className="min-h-screen bg-[#F3F7F2] p-5">
-      <div className="bg-white p-3 rounded-xl shadow-sm ">
-        <div className="flex items-center w-[900px] mx-auto gap-3">
+    <div className="min-h-screen space-y-6">
+      {/* Search Bar */}
+      <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <div className="flex items-center max-w-3xl mx-auto gap-3">
 
           <div className="flex items-center bg-[#EBEBEB] border border-[#E5E7EB]
               px-3 h-[52px] rounded-xl w-full shadow-sm">
@@ -129,19 +130,19 @@ export default function TutorDetails() {
         </div>
       </div>
       {/* MAIN CARD */}
-      <div className="bg-white shadow-md rounded-2xl p-8 mt-10 max-w-4xl mx-auto">
+      <div className="bg-white shadow-lg rounded-2xl p-8 max-w-4xl mx-auto border border-gray-100 space-y-6">
 
         {/* Top Profile */}
-        <div className="flex items-center gap-4">
-          <img src={tutorData?.avatar} className="w-14 h-14 rounded-full" />
+        <div className="flex items-center gap-4 pb-6 border-b border-gray-100">
+          <img src={tutorData?.avatar} className="w-16 h-16 rounded-full object-cover border-4 border-purple-100" />
           <div>
-            <h2 className="text-lg font-semibold">{tutorData?.name}</h2>
-            <p className="text-gray-600">English</p>
+            <h2 className="text-xl font-bold text-gray-900">{tutorData?.name}</h2>
+            <p className="text-gray-500">English</p>
           </div>
         </div>
 
         {/* Experience - Rating - Price */}
-        <div className="grid grid-cols-3 w-96  text-center mt-10">
+        <div className="grid grid-cols-3 gap-6 py-4">
 
           <div className="flex flex-col items-center">
             <img src={logo2} className="w-7 h-7 mb-1" />
@@ -188,17 +189,19 @@ export default function TutorDetails() {
         </p>
 
         {/* Subject */}
-        <h3 className="mt-8 font-semibold text-[#7C7C7C]">Subject</h3>
-        <div className="flex flex-wrap gap-2 mt-2 max-w-[250px]">
-          {tutorData?.teacher.subjectsTaught
-            ?.map((item) => (
-              <span
-                key={item}
-                className="px-3 py-1 text-sm rounded-full bg-[#EBEBEB] border border-[#E3E3FF] font-medium bg-clip-text text-transparent bg-linear-to-r from-[#6657E2] to-[#903CD1]"
-              >
-                {item}
-              </span>
-            ))}
+        <div className="space-y-3">
+          <h3 className="font-bold text-gray-800 text-lg">Subject</h3>
+          <div className="flex flex-wrap gap-2">
+            {tutorData?.teacher.subjectsTaught
+              ?.map((item) => (
+                <span
+                  key={item}
+                  className="px-4 py-2 text-sm rounded-full bg-purple-50 text-purple-700 border border-purple-100 font-medium"
+                >
+                  {item}
+                </span>
+              ))}
+          </div>
         </div>
 
 
@@ -213,20 +216,20 @@ export default function TutorDetails() {
           </p>
         </div>
         {/* Available Time */}
-        <h3 className="mt-8 font-semibold text-[#7C7C7C]">Available time and date</h3>
-
-        <div className="mt-2 flex flex-col gap-2">
-          <span className="px-4 py-2 text-sm text-[#7C7C7C] shadow rounded-lg inline-block w-fit">
-            {tutorData?.teacher.availableTime.startTime} to {tutorData?.teacher.availableTime.endTime}
-          </span>
-
-          <span className="px-4 py-2 text-sm text-[#7C7C7C] shadow rounded-lg flex flex-row gap-4 w-fit ">
-            {tutorData?.teacher.availableDays.map((data, index) => {
-              return (
-                <span key={index}>{data}</span>
-              )
-            })}
-          </span>
+        <div className="space-y-3">
+          <h3 className="font-bold text-gray-800 text-lg">Available time and date</h3>
+          <div className="flex flex-col gap-3">
+            <span className="px-4 py-3 text-sm text-gray-600 bg-gray-50 rounded-xl inline-block w-fit font-medium">
+              {tutorData?.teacher.availableTime.startTime} to {tutorData?.teacher.availableTime.endTime}
+            </span>
+            <span className="px-4 py-3 text-sm text-gray-600 bg-gray-50 rounded-xl flex flex-row gap-4 w-fit">
+              {tutorData?.teacher.availableDays.map((data, index) => {
+                return (
+                  <span key={index} className="font-medium">{data}</span>
+                )
+              })}
+            </span>
+          </div>
         </div>
         {/* Reviews */}
         <h3 className="mt-10 font-semibold text-[#7C7C7C]">Review</h3>

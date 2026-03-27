@@ -15,6 +15,7 @@ export default function Messages() {
     const [newMessage, setNewMessage] = useState("");
     const messagesEndRef = useRef(null);
     const [loading, setLoading] = useState(false);
+    const [showMobileChat, setShowMobileChat] = useState(false);
     const location = useLocation();
     const { user } = useAuth(); // Assuming UseAuth hook works for tutors too
 
@@ -93,6 +94,7 @@ export default function Messages() {
 
     const handleSelectConversation = async (conv) => {
         setActiveConversation(conv);
+        setShowMobileChat(true); // Show chat on mobile when conversation selected
         setLoading(true);
 
         // Join conversation room
@@ -199,20 +201,23 @@ export default function Messages() {
     }
 
     return (
-        <div className="">
+        <div className="space-y-6 h-[calc(100vh-120px)]">
             {/* Header */}
-            <h2 className="text-[#6657E2] font-semibold text-xl mb-1">
-                Messages
-            </h2>
-            <p className="text-gray-500 text-sm mb-6">
-                Communicate with your tutors and stay connected.
-            </p>
-            <div className="flex  h-[700px] ">
+            <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                    Messages
+                </h2>
+                <p className="text-gray-500 text-sm mt-1">
+                    Communicate with your tutors and stay connected.
+                </p>
+            </div>
 
-                {/* Left Sidebar */}
-                <div className="w-64 bg-white rounded-xl p-4 shadow-lg space-y-4 overflow-y-auto">
+            <div className="flex flex-col md:flex-row h-[calc(100vh-200px)] md:h-[600px] gap-4 md:gap-6">
+
+                {/* Left Sidebar - Conversations List */}
+                <div className={`${showMobileChat && activeConversation ? 'hidden' : 'flex'} md:flex w-full md:w-72 bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-gray-100 flex-col space-y-4 overflow-y-auto`}>
                     <div>
-                        <h2 className="text-[#6657E2] font-semibold text-xl mb-1">Conversations</h2>
+                        <h3 className="text-lg font-bold text-gray-800 mb-1">Conversations</h3>
                     </div>
 
                     {/* Conversations List */}
@@ -265,9 +270,18 @@ export default function Messages() {
 
                 {/* Chat Area */}
                 {activeConversation ? (
-                    <div className="flex-1 bg-white rounded-xl p-6 shadow-lg ml-6 flex flex-col">
+                    <div className={`${!showMobileChat ? 'hidden' : 'flex'} md:flex flex-1 bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex-col`}>
                         {/* Header */}
-                        <div className="flex items-center gap-3 mb-6 border-b pb-4">
+                        <div className="flex items-center gap-3 mb-4 md:mb-6 border-b border-gray-100 pb-4">
+                            {/* Back button for mobile */}
+                            <button 
+                                onClick={() => setShowMobileChat(false)}
+                                className="md:hidden p-2 hover:bg-gray-100 rounded-lg -ml-2"
+                            >
+                                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
                             <img
                                 src={getOtherParticipant(activeConversation).avatar || "https://placehold.co/40"}
                                 alt="User"
@@ -298,7 +312,7 @@ export default function Messages() {
                                 return (
                                     <div
                                         key={msg._id || i}
-                                        className={`max-w-xs p-3 rounded-lg text-sm ${isMe ? "ml-auto text-white" : "bg-gray-200 text-gray-800"
+                                        className={`max-w-[75%] md:max-w-xs p-3 rounded-lg text-sm ${isMe ? "ml-auto text-white" : "bg-gray-200 text-gray-800"
                                             }`}
                                         style={
                                             isMe
@@ -324,39 +338,54 @@ export default function Messages() {
 
 
                         {/* Input Box */}
-                        <div className="mt-6 flex items-center justify-center">
-                            <div className="relative w-full max-w-4xl">
-                                {/* Plus Icon (Left Outside) - Placeholder for File Upload */}
-                                <button className="absolute -left-10 top-1/2 -translate-y-1/2 bg-white shadow-md w-10 h-10 rounded-full flex items-center justify-center text-purple-600 text-2xl font-bold hover:bg-gray-50">
+                        <div className="mt-4 md:mt-6 flex items-center gap-2 md:gap-0">
+                            <button className="md:hidden flex-shrink-0 bg-white shadow-md w-10 h-10 rounded-full flex items-center justify-center text-purple-600 text-xl font-bold hover:bg-gray-50">
+                                +
+                            </button>
+                            
+                            <div className="relative flex-1 max-w-4xl">
+                                {/* Plus Icon - Desktop only */}
+                                <button className="hidden md:flex absolute -left-10 top-1/2 -translate-y-1/2 bg-white shadow-md w-10 h-10 rounded-full items-center justify-center text-purple-600 text-2xl font-bold hover:bg-gray-50">
                                     +
                                 </button>
 
                                 {/* Input Box */}
-                                <div className="border border-gray-300 rounded-full pl-6 pr-6 py-3 flex items-center bg-white">
+                                <div className="border border-gray-300 rounded-full pl-4 md:pl-6 pr-4 md:pr-6 py-2.5 md:py-3 flex items-center bg-white">
                                     <input
                                         type="text"
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
                                         placeholder="Type a message..."
-                                        className="flex-1 outline-none border-none text-[15px]"
+                                        className="flex-1 outline-none border-none text-sm md:text-[15px] min-w-0"
                                     />
                                 </div>
 
-                                {/* Send Icon (Right Outside) */}
+                                {/* Send Icon - Desktop */}
                                 <button
                                     onClick={handleSendMessage}
-                                    className="absolute -right-10 top-1/2 -translate-y-1/2 bg-white shadow-md w-10 h-10 rounded-full flex items-center justify-center text-purple-600 text-xl hover:bg-gray-50 transition-colors">
-                                    <img src={logo} alt="Send" />
+                                    className="hidden md:flex absolute -right-10 top-1/2 -translate-y-1/2 bg-white shadow-md w-10 h-10 rounded-full items-center justify-center text-purple-600 text-xl hover:bg-gray-50 transition-colors">
+                                    <img src={logo} alt="Send" className="w-5 h-5" />
                                 </button>
-
                             </div>
+                            
+                            {/* Send Icon - Mobile */}
+                            <button
+                                onClick={handleSendMessage}
+                                className="md:hidden flex-shrink-0 bg-gradient-to-r from-[#6657E2] to-[#903CD1] w-10 h-10 rounded-full flex items-center justify-center text-white hover:opacity-90 transition-colors">
+                                <img src={logo} alt="Send" className="w-5 h-5 brightness-0 invert" />
+                            </button>
                         </div>
 
                     </div>
                 ) : (
-                    <div className="flex-1 bg-white rounded-xl p-6 shadow-lg ml-6 flex flex-col justify-center items-center text-gray-400">
-                        <p>Select a conversation to start chatting</p>
+                    <div className="hidden md:flex flex-1 bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-col justify-center items-center text-gray-400">
+                        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                            <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                        </div>
+                        <p className="text-gray-500 font-medium">Select a conversation to start chatting</p>
                     </div>
                 )}
             </div>

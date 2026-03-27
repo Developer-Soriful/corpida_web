@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import logo from "../../assets/Rectangle 923.png";
+import defaultAvatar from "../../assets/user_icon.png";
 import { FaRegEdit, FaSave, FaTimes } from "react-icons/fa";
-import { FiChevronDown, FiCamera } from "react-icons/fi";
+import { FiCamera } from "react-icons/fi";
 import { useAuth } from "../../context/UseAuth";
 import api from "../../services/api";
 import { objectToFormData } from "../../utils/formDataHelper";
@@ -20,8 +20,8 @@ export default function MyProfile() {
     const [countryCode, setCountryCode] = useState(user?.countryCode || '+1242');
     const [dob, setDob] = useState('');
 
-    // Image Upload State
-    const [previewUrl, setPreviewUrl] = useState(user?.avatar || logo);
+    // Image Upload State - prioritize selected image preview, then user avatar, then default
+    const [previewUrl, setPreviewUrl] = useState(user?.avatar || defaultAvatar);
     const [selectedImage, setSelectedImage] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -31,7 +31,7 @@ export default function MyProfile() {
             setBio(user.bio || '');
             setPhoneNumber(user.phoneNumber || '');
             setCountryCode(user.countryCode || '+1242');
-            setPreviewUrl(user.avatar || logo);
+            setPreviewUrl(user.avatar || defaultAvatar);
 
             if (user.dateOfBirth) {
                 const d = new Date(user.dateOfBirth);
@@ -53,7 +53,7 @@ export default function MyProfile() {
         setBio(user?.bio || '');
         setPhoneNumber(user?.phoneNumber || '');
         setCountryCode(user?.countryCode || '+1242');
-        setPreviewUrl(user?.avatar || logo);
+        setPreviewUrl(user?.avatar || defaultAvatar);
         setSelectedImage(null);
         if (user?.dateOfBirth) {
             const d = new Date(user.dateOfBirth);
@@ -112,7 +112,7 @@ export default function MyProfile() {
             if (updatedUser) {
                 console.log("User Updated Successfully:", updatedUser);
                 setUser(updatedUser);
-                setPreviewUrl(updatedUser.avatar || logo);
+                setPreviewUrl(updatedUser.avatar || defaultAvatar);
                 toast.success('Profile updated successfully!');
                 setIsEditing(false);
             } else {
@@ -131,68 +131,72 @@ export default function MyProfile() {
     if (!user) return <Spinner text="Loading Profile..." className="text-[#6657E2]" />;
 
     return (
-        <div className="bg-[#F3F7F2] min-h-screen">
+        <div className="min-h-screen space-y-4 md:space-y-6 px-4 md:px-0">
             {/* TITLE */}
-            <h2 className="text-[#6657E2] text-2xl font-semibold mb-1">My Profile</h2>
-            <p className="text-gray-500 mb-8">
-                Manage your personal information and learning preferences.
-            </p>
+            <div>
+                <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">My Profile</h2>
+                <p className="text-gray-500 text-sm mt-1">
+                    Manage your personal information and learning preferences.
+                </p>
+            </div>
 
-            <div className="flex gap-8">
-                {/* LEFT CARD */}
-                <div className="w-64">
-                    <div className="bg-white rounded-xl shadow p-6 text-center">
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+                {/* LEFT CARD - Profile Summary */}
+                <div className="w-full lg:w-80 xl:w-72 flex-shrink-0 space-y-4 lg:space-y-6">
+                    {/* Profile Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 text-center">
                         <div className="relative inline-block">
-                            <img
-                                src={previewUrl}
-                                className="w-24 h-24 rounded-full mx-auto object-cover"
-                                alt="Profile"
-                                onError={(e) => { e.target.src = logo; }}
-                            />
-                            {isEditing && (
-                                <div
-                                    className="absolute inset-0 flex items-center justify-center cursor-pointer group"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <div className="bg-black bg-opacity-50 rounded-full w-24 h-24 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <FiCamera className="text-white text-xl" />
+                            <div className="relative">
+                                <img
+                                    src={previewUrl}
+                                    className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto object-cover border-4 border-purple-100 bg-gray-50"
+                                    alt="Profile"
+                                    onError={(e) => { e.target.src = defaultAvatar; }}
+                                />
+                                {isEditing && (
+                                    <div
+                                        className="absolute inset-0 flex items-center justify-center cursor-pointer group"
+                                        onClick={() => fileInputRef.current?.click()}
+                                    >
+                                        <div className="bg-black/60 rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <FiCamera className="text-white text-lg md:text-xl" />
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                            accept="image/*"
+                                        />
                                     </div>
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleImageChange}
-                                        className="hidden"
-                                        accept="image/*"
-                                    />
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
 
-                        <h3 className="mt-4 font-semibold text-gray-900 text-lg">
+                        <h3 className="mt-4 font-bold text-gray-900 text-base md:text-lg">
                             {user.name}
                         </h3>
 
-                        <span className="px-3 py-1 text-xs text-[#F3934F] bg-[#EBEBEB] rounded-full mt-2 inline-block">
+                        <span className="px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 rounded-full mt-2 inline-block capitalize">
                             {user.role}
                         </span>
 
-                        <p className="text-[#7C7C7C] text-xs mt-2">
+                        <p className="text-gray-500 text-xs md:text-sm mt-3">
                             Member since {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                     </div>
 
                     {/* Learning Preferences */}
-                    <div className="bg-white rounded-xl shadow p-6 mt-4">
-                        <h3 className="text-[#6657E2] font-semibold mb-3 text-lg">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                        <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4">
                             Learning Preferences
                         </h3>
-                        <p className="text-[#7C7C7C] text-sm mb-2">Interests</p>
+                        <p className="text-gray-500 text-xs md:text-sm mb-3">Interests</p>
                         <div className="flex flex-wrap gap-2">
                             {user?.student?.interestedSubjects?.map((item) => (
                                 <span
                                     key={item}
-                                    className="px-3 py-1 font-medium text-xs rounded-full bg-[#EBEBEB] border border-[#E3E3FF]
-                 bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-transparent bg-clip-text"
+                                    className="px-2.5 py-1 md:px-3 md:py-1.5 font-medium text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-100"
                                 >
                                     {item}
                                 </span>
@@ -202,145 +206,132 @@ export default function MyProfile() {
                 </div>
 
                 {/* RIGHT FORM */}
-                <div className="flex-1 p-8">
-                    <div className="grid grid-cols-1 gap-6 w-full">
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 lg:p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         {/* Name */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Name</label>
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Name</label>
                             {isEditing ? (
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Enter your name"
                                 />
                             ) : (
-                                <p className="w-full rounded-lg shadow bg-[#FFFFFF] border-gray-300 px-4 py-3 outline-none text-sm">
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
                                     {user.name}
-                                </p>
+                                </div>
                             )}
                         </div>
 
                         {/* Email */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Email</label>
-                            <p className="w-full rounded-lg shadow bg-gray-50 text-gray-500 border-gray-300 px-4 py-3 outline-none text-sm">
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Email</label>
+                            <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-600">
                                 {user.email}
-                            </p>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
                         </div>
 
-                        {/* Date of Birth - Only show input in edit, or text if exists */}
-                        {isEditing && (
-                            <div>
-                                <label className="block mb-1 text-gray-700 text-sm">Date of Birth</label>
+                        {/* Date of Birth */}
+                        <div>
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Date of Birth</label>
+                            {isEditing ? (
                                 <input
                                     type="date"
                                     value={dob}
                                     onChange={(e) => setDob(e.target.value)}
-                                    className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
                                 />
-                            </div>
-                        )}
+                            ) : (
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                    {dob ? new Date(dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not provided'}
+                                </div>
+                            )}
+                        </div>
 
                         {/* Phone */}
                         <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Phone Number</label>
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Phone Number</label>
                             <div className="flex gap-2">
-                                {isEditing ? (
-                                    <select
-                                        value={countryCode}
-                                        onChange={(e) => setCountryCode(e.target.value)}
-                                        className="px-4 rounded-lg text-sm text-white shadow-md"
-                                        style={{
-                                            background: "linear-gradient(90deg, #6657E2, #903CD1)",
-                                            border: "1px solid rgba(255,255,255,0.4)",
-                                        }}
-                                    >
-                                        <option value="+880">🇧🇩 +880</option>
-                                        <option value="+1">🇺🇸 +1</option>
-                                        <option value="+44">🇬🇧 +44</option>
-                                        <option value="+91">🇮🇳 +91</option>
-                                        <option value="+1242">🇧🇸 +1242</option>
-                                    </select>
-                                ) : (
-                                    <div
-                                        className="px-4 flex items-center gap-2 rounded-lg text-sm text-white shadow-md"
-                                        style={{
-                                            background: "linear-gradient(90deg, #6657E2, #903CD1)",
-                                            border: "1px solid rgba(255,255,255,0.4)",
-                                        }}
-                                    >
-                                        <img src={logo} className="w-5 h-5 rounded-sm" />
-                                        {user.countryCode || '+1242'}
-                                        <FiChevronDown size={18} />
-                                    </div>
-                                )}
+                                <select
+                                    value={countryCode}
+                                    onChange={(e) => isEditing && setCountryCode(e.target.value)}
+                                    disabled={!isEditing}
+                                    className="px-3 rounded-xl text-sm bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0 outline-none cursor-pointer disabled:cursor-default min-w-[80px]"
+                                >
+                                    <option value="+880" className="text-gray-800 bg-white">🇧🇩 +880</option>
+                                    <option value="+1" className="text-gray-800 bg-white">🇺🇸 +1</option>
+                                    <option value="+44" className="text-gray-800 bg-white">🇬🇧 +44</option>
+                                    <option value="+91" className="text-gray-800 bg-white">🇮🇳 +91</option>
+                                    <option value="+1242" className="text-gray-800 bg-white">🇧🇸 +1242</option>
+                                </select>
 
                                 {isEditing ? (
                                     <input
-                                        type="text"
+                                        type="tel"
                                         value={phoneNumber}
                                         onChange={(e) => setPhoneNumber(e.target.value)}
-                                        className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                        className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
                                         placeholder="Enter phone number"
                                     />
                                 ) : (
-                                    <p className="flex-1 rounded-lg shadow bg-[#FFFFFF] border-gray-300 px-4 py-3 outline-none text-sm">
-                                        {user.phoneNumber || "Phone number not provided"}
-                                    </p>
+                                    <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                        {user.phoneNumber || "Not provided"}
+                                    </div>
                                 )}
                             </div>
                         </div>
 
                         {/* Bio */}
-                        {isEditing ? (
-                            <div>
-                                <label className="block mb-1 text-gray-700 text-sm">Bio</label>
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Bio</label>
+                            {isEditing ? (
                                 <textarea
                                     value={bio}
                                     onChange={(e) => setBio(e.target.value)}
-                                    className="w-full h-24 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm resize-none"
+                                    rows={4}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm resize-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
                                     placeholder="Tell us about yourself..."
                                 />
-                            </div>
-                        ) : user.bio && (
-                            <div>
-                                <label className="block mb-1 text-gray-700 text-sm">Bio</label>
-                                <p className="w-full rounded-lg shadow bg-[#FFFFFF] border-gray-300 px-4 py-3 outline-none text-sm">
-                                    {user.bio}
-                                </p>
-                            </div>
-                        )}
+                            ) : (
+                                <div className={`w-full rounded-xl border border-gray-100 px-4 py-3 text-sm ${user.bio ? 'text-gray-800 bg-gray-50' : 'text-gray-400 bg-gray-50 italic'}`}>
+                                    {user.bio || "No bio added yet"}
+                                </div>
+                            )}
+                        </div>
 
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="w-full flex justify-end gap-3 mt-8">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 md:mt-8">
                         {isEditing ? (
                             <>
                                 <button
                                     onClick={handleCancel}
                                     disabled={isSaving}
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md hover:bg-gray-50"
+                                    className="px-5 py-2.5 md:px-6 md:py-3 border border-gray-200 text-gray-700 rounded-xl flex items-center justify-center gap-2 text-sm font-medium hover:bg-gray-50 transition-colors"
                                 >
-                                    <FaTimes size="20" />
+                                    <FaTimes size={18} />
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSubmit}
                                     disabled={isSaving}
-                                    className={`px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md text-white ${isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-linear-to-r from-[#6657E2] to-[#903CD1] hover:opacity-90'}`}
+                                    className={`px-5 py-2.5 md:px-6 md:py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium text-white transition-all ${isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 hover:shadow-lg'}`}
                                 >
-                                    {isSaving ? <Spinner size="small" showText={false} fullScreen={false} className="text-white" /> : <FaSave size="20" />}
+                                    {isSaving ? <Spinner size="small" showText={false} fullScreen={false} className="text-white" /> : <FaSave size={18} />}
                                     {isSaving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </>
                         ) : (
                             <button
                                 onClick={handleEdit}
-                                className="bg-gradient-to-r from-[#6657E2] to-[#903CD1] hover:opacity-90 text-white px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md"
+                                className="px-5 py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all hover:shadow-lg"
                             >
-                                <FaRegEdit size="20" />
+                                <FaRegEdit size={18} />
                                 Edit Profile
                             </button>
                         )}
