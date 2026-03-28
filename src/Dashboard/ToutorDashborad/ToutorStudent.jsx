@@ -108,29 +108,29 @@ const ToutorStudent = () => {
   };
 
   return (
-    <div className="rounded-2xl mb-1">
+    <div className="space-y-4 md:space-y-6 px-4 md:px-0">
+      {/* Header */}
+      <div>
+        <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          My Students
+        </h2>
+        <p className="text-gray-500 text-sm mt-1">
+          View and manage your students and their lesson progress.
+        </p>
+      </div>
 
-
-      <h2 className="text-[22px] font-semibold text-[#6657E2]">
-        My Students
-      </h2>
-      <p className="text-gray-500 text-sm mt-1">
-        View and manage your students and their lesson progress.
-      </p>
-
-      <div className="p-3 mt-5 rounded-2xl bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <IoSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search students..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6657E2] w-64"
-              />
-            </div>
+      {/* Search Bar */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="relative w-full sm:w-72">
+            <IoSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="text"
+              placeholder="Search students..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
+            />
           </div>
           <div className="text-sm text-gray-500">
             Showing {students.length} of {pagination.totalDocs} students
@@ -140,51 +140,48 @@ const ToutorStudent = () => {
 
 
 
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Students Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
         {loading ? (
-          <div className="col-span-full text-center py-8">
+          <div className="col-span-full text-center py-12">
             <div className="text-gray-500">Loading students...</div>
           </div>
         ) : students.length === 0 ? (
-          <div className="col-span-full text-center py-8">
+          <div className="col-span-full text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
             <div className="text-gray-500">No students found</div>
           </div>
         ) : (
           getPaginatedStudents().map((student) => (
-            <div key={student._id} className="bg-white rounded-xl shadow-md p-5">
+            <div key={student._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow">
 
               {/* Profile */}
-              <div className="flex items-center gap-3 mt-5">
+              <div className="flex items-center gap-3">
                 <img
                   src={student.avatar || logo1}
                   alt={student.name}
-                  className="w-11 h-11 rounded-full object-cover"
+                  className="w-12 h-12 rounded-full object-cover border-2 border-purple-100"
                 />
-                <div className="w-full">
-                  <h3 className="font-semibold text-[17px]">{student.name}</h3>
-
-                  {/* Email */}
-                  <p className="text-gray-500 text-sm leading-[18px] break-words line-clamp-2">
+                <div className="w-full min-w-0">
+                  <h3 className="font-semibold text-gray-900 text-base truncate">{student.name}</h3>
+                  <p className="text-gray-500 text-sm truncate">
                     {student.email}
                   </p>
                 </div>
               </div>
 
               {/* Bio */}
-              <p className="text-[#7A7A7A] text-sm mt-4 leading-relaxed line-clamp-2">
+              <p className="text-gray-600 text-sm mt-4 leading-relaxed line-clamp-2">
                 {student.bio || 'No bio available'}
               </p>
 
-              <p className="text-[#7C7C7C] mt-3 text-sm mb-2">Interested Subjects</p>
+              <p className="text-gray-500 mt-4 text-sm mb-2">Interested Subjects</p>
 
               {/* Interested Subjects badges */}
               <div className="flex flex-wrap gap-2 max-h-[70px] overflow-hidden">
                 {student.student?.interestedSubjects?.map((subject) => (
                   <span
                     key={subject}
-                    className="px-5 py-1 text-sm rounded-full bg-[#EBEBEB] border border-[#E3E3FF]
-      bg-clip-text text-transparent font-medium [background-image:linear-gradient(90deg,#6657E2,#903CD1)]
-      whitespace-normal">
+                    className="px-2.5 py-1 text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-100 font-medium">
                     {subject}
                   </span>
                 )) || (
@@ -193,7 +190,7 @@ const ToutorStudent = () => {
               </div>
 
               {/* Online Status */}
-              <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center gap-2 mt-4">
                 <div className={`w-2 h-2 rounded-full ${student.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
                 <span className="text-xs text-gray-500">
                   {student.isOnline ? 'Online' : `Last seen: ${new Date(student.lastSeen).toLocaleDateString()}`}
@@ -203,8 +200,7 @@ const ToutorStudent = () => {
               {/* Button */}
               <Link to={`/toturdashbord/toutorsendmessagest/${student._id}`} state={{ student }}>
                 <button
-                  className="w-full mt-5 py-3 text-white font-medium rounded-lg 
-          bg-gradient-to-r from-[#6657E2] via-[#903CD1] to-[#903CD1]"
+                  className="w-full mt-5 py-2.5 text-white font-medium rounded-xl bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 transition-all shadow-sm hover:shadow-md"
                 >
                   Message
                 </button>
@@ -217,13 +213,13 @@ const ToutorStudent = () => {
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2">
           <button
             onClick={handlePrevPage}
             disabled={!pagination.hasPrevPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${pagination.hasPrevPage
-              ? 'bg-[#6657E2] text-white hover:bg-[#5a47d0]'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${pagination.hasPrevPage
+              ? 'bg-purple-600 text-white hover:bg-purple-700'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
           >
             Previous
@@ -234,9 +230,9 @@ const ToutorStudent = () => {
               <button
                 key={pageNum}
                 onClick={() => handlePageChange(pageNum)}
-                className={`px-3 py-1 rounded-lg text-sm font-medium ${pagination.page === pageNum
-                  ? 'bg-[#6657E2] text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${pagination.page === pageNum
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 {pageNum}
@@ -247,9 +243,9 @@ const ToutorStudent = () => {
           <button
             onClick={handleNextPage}
             disabled={!pagination.hasNextPage}
-            className={`px-4 py-2 rounded-lg text-sm font-medium ${pagination.hasNextPage
-              ? 'bg-[#6657E2] text-white hover:bg-[#5a47d0]'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${pagination.hasNextPage
+              ? 'bg-purple-600 text-white hover:bg-purple-700'
+              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
           >
             Next

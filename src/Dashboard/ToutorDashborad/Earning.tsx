@@ -6,27 +6,27 @@ import logo1 from '../../assets/Frame4.png';
 import api from '../../services/api';
 import Spinner from '../../Components/Spinner';
 
-// interface Transaction {
-//     id?: string;
-//     title?: string;
-//     date?: string;
-//     status?: string;
-//     amount?: number;
-// }
+interface Transaction {
+    id?: string;
+    title?: string;
+    date?: string;
+    status?: string;
+    amount?: number;
+}
 
-// interface EarningDataType {
-//     totalPendingPayments: number;
-//     totalEarnings: number;
-//     completedPayments: number;
-//     lastTransactions?: Transaction[];
-//     isWalletConnected?: boolean;
-//     hasPayoutMethod?: boolean;
-//     totalSpent?: number;
-// }
+interface EarningDataType {
+    totalPendingPayments: number;
+    totalEarnings: number;
+    completedPayments: number;
+    lastTransactions?: Transaction[];
+    isWalletConnected?: boolean;
+    hasPayoutMethod?: boolean;
+    totalSpent?: number;
+}
 
 export default function Earning() {
-    const [transactions, setTransactions] = useState([]);
-    const [earningData, setEarningData] = useState({
+    const [transactions, setTransactions] = useState < Transaction[] > ([]);
+    const [earningData, setEarningData] = useState < EarningDataType > ({
         totalPendingPayments: 0,
         totalEarnings: 0,
         completedPayments: 0
@@ -100,8 +100,8 @@ export default function Earning() {
                 <button
                     onClick={() => setShowWalletModal(true)}
                     className={`px-5 py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-medium shadow-sm hover:shadow-md transition-all ${isWalletConnected
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 text-white'
+                            ? 'bg-green-600 hover:bg-green-700 text-white'
+                            : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 text-white'
                         }`}
                 >
                     {isWalletConnected ? (

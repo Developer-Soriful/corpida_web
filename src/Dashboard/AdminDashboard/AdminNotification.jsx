@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { FiBell, FiTrash2 } from "react-icons/fi";
 import api from "../../services/api";
 import Spinner from "../../Components/Spinner";
@@ -6,6 +7,7 @@ import { toast } from "react-toastify";
 import { formatDistanceToNow } from 'date-fns';
 
 const AdminNotification = () => {
+    const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -26,7 +28,52 @@ const AdminNotification = () => {
         fetchNotifications();
     }, []);
 
-    const handleDelete = async (id) => {
+    const getNotificationNavigation = (notification) => {
+        const { title = '', message = '' } = notification;
+        const content = (title + ' ' + message).toLowerCase();
+        
+        if (content.includes('tutor') || content.includes('teacher') ||
+            content.includes('approval') || content.includes('verify')) {
+            return '/admin/tutor';
+        }
+        
+        if (content.includes('student') || content.includes('learner') ||
+            content.includes('user')) {
+            return '/admin/students';
+        }
+        
+        if (content.includes('booking') || content.includes('lesson') ||
+            content.includes('appointment')) {
+            return '/admin/bookings';
+        }
+        
+        if (content.includes('payment') || content.includes('transaction') ||
+            content.includes('invoice')) {
+            return '/admin/payments';
+        }
+        
+        if (content.includes('support') || content.includes('ticket') ||
+            content.includes('issue')) {
+            return '/admin/support';
+        }
+        
+        if (content.includes('message') || content.includes('chat') ||
+            content.includes('conversation')) {
+            return '/admin/messages';
+        }
+        
+        return null;
+    };
+
+    const handleNotificationClick = (notification) => {
+        const route = getNotificationNavigation(notification);
+        if (route) {
+            navigate(route);
+        }
+    };
+
+    const handleDelete = async (id, e) => {
+        e.stopPropagation();
         try {
             await api.delete(`/notification/${id}`);
             setNotifications(prev => prev.filter(n => n._id !== id));
@@ -73,34 +120,38 @@ const AdminNotification = () => {
                         <p>No new notifications.</p>
                     </div>
                 ) : (
-                    notifications.map((notification) => (
-                        <div
-                            key={notification._id}
-                            className="bg-white rounded p-4 flex gap-4 items-start shadow-[0px_2px_8px_rgba(0,0,0,0.06)] group relative border border-gray-50 hover:border-purple-100 transition-all"
-                        >
-                            <div className="w-7 h-7 flex items-center justify-center rounded-md bg-[#F8F4FF]">
-                                <FiBell className="text-[#9B72E9] text-[20px]" />
-                            </div>
-
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-[#1F1D1D] text-[15px]">{notification.title || "Admin Alert"}</h3>
-                                <p className="text-[#606060] text-[13px]">
-                                    {notification.message}
-                                </p>
-                                <p className="text-[#606060] text-[12px] mt-1">
-                                    {notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true }) : ''}
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => handleDelete(notification._id)}
-                                className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all"
-                                title="Delete notification"
+                    notifications.map((notification) => {
+                        const hasNavigation = getNotificationNavigation(notification) !== null;
+                        return (
+                            <div
+                                key={notification._id}
+                                onClick={() => hasNavigation && handleNotificationClick(notification)}
+                                className={`bg-white rounded p-4 flex gap-4 items-start shadow-[0px_2px_8px_rgba(0,0,0,0.06)] group relative border border-gray-50 hover:border-purple-100 transition-all ${hasNavigation ? 'cursor-pointer hover:bg-gray-50' : ''}`}
                             >
-                                <FiTrash2 size={16} />
-                            </button>
-                        </div>
-                    ))
+                                <div className="w-7 h-7 flex items-center justify-center rounded-md bg-[#F8F4FF]">
+                                    <FiBell className="text-[#9B72E9] text-[20px]" />
+                                </div>
+
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-[#1F1D1D] text-[15px]">{notification.title || "Admin Alert"}</h3>
+                                    <p className="text-[#606060] text-[13px]">
+                                        {notification.message}
+                                    </p>
+                                    <p className="text-[#606060] text-[12px] mt-1">
+                                        {notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true }) : ''}
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={(e) => handleDelete(notification._id, e)}
+                                    className="opacity-0 group-hover:opacity-100 p-2 text-gray-400 hover:text-red-500 transition-all"
+                                    title="Delete notification"
+                                >
+                                    <FiTrash2 size={16} />
+                                </button>
+                            </div>
+                        );
+                    })
                 )}
             </div>
         </div>

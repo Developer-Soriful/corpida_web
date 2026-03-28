@@ -1,9 +1,9 @@
-import { FiChevronDown, FiCamera } from "react-icons/fi";
-import logo from "../../assets/Rectangle 923.png";
+import { useState, useRef, useEffect } from "react";
+import defaultAvatar from "../../assets/user_icon.png";
 import { FaRegEdit, FaSave, FaTimes } from "react-icons/fa";
+import { FiCamera } from "react-icons/fi";
 import { useAuth } from "../../context/UseAuth";
 import Spinner from "../../Components/Spinner";
-import { useState, useRef } from "react";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 
@@ -317,364 +317,351 @@ export default function TutorMyProfile() {
         }
     };
     return (
-        <div className="bg-[#F3F7F2] min-h-screen">
+        <div className="min-h-screen space-y-4 md:space-y-6 px-4 md:px-0">
+            {/* TITLE */}
+            <div>
+                <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">My Profile</h2>
+                <p className="text-gray-500 text-sm mt-1">
+                    Manage your personal information and teaching preferences.
+                </p>
+            </div>
 
-
-            <h2 className="text-[#6657E2] text-2xl font-semibold mb-1">My Profile</h2>
-            <p className="text-gray-500 mb-8">
-                Manage your personal information and learning preferences.
-            </p>
-
-            <div className="flex gap-8">
-
-                <div className="w-64">
-                    <div className="bg-white rounded-xl shadow p-6 text-center">
-                        {/* Avatar with upload functionality */}
-                        <div className="relative w-24 h-24 mx-auto">
-                            <img
-                                src={avatarPreview || user?.avatar}
-                                alt={user?.name}
-                                className="w-24 h-24 rounded-full object-cover"
-                            />
-
-                            {/* Upload overlay - only show when editing */}
-                            {isEditing && (
-                                <>
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+                {/* LEFT CARD - Profile Summary */}
+                <div className="w-full lg:w-80 xl:w-72 flex-shrink-0 space-y-4 lg:space-y-6">
+                    {/* Profile Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6 text-center">
+                        <div className="relative inline-block">
+                            <div className="relative">
+                                <img
+                                    src={avatarPreview || user?.avatar || defaultAvatar}
+                                    alt={user?.name}
+                                    className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto object-cover border-4 border-purple-100 bg-gray-50"
+                                    onError={(e) => { e.target.src = defaultAvatar; }}
+                                />
+                                {isEditing && (
                                     <div
+                                        className="absolute inset-0 flex items-center justify-center cursor-pointer group"
                                         onClick={() => fileInputRef.current?.click()}
-                                        className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
                                     >
-                                        <FiCamera className="text-white text-2xl" />
+                                        <div className="bg-black/60 rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <FiCamera className="text-white text-lg md:text-xl" />
+                                        </div>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleAvatarChange}
+                                            className="hidden"
+                                            accept="image/*"
+                                        />
                                     </div>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleAvatarChange}
-                                        className="hidden"
-                                    />
-                                </>
-                            )}
+                                )}
+                            </div>
                         </div>
 
-                        <h3 className="mt-4 font-semibold text-gray-900 text-lg">
+                        <h3 className="mt-4 font-bold text-gray-900 text-base md:text-lg">
                             {user?.name}
                         </h3>
 
-                        <span className="px-3 py-1 text-xs text-[#F3934F] bg-[#EBEBEB] rounded-full mt-2 inline-block">
+                        <span className="px-3 py-1 text-xs font-medium text-purple-700 bg-purple-50 rounded-full mt-2 inline-block capitalize">
                             {user?.role}
                         </span>
 
-                        <p className="text-[#7C7C7C] text-xs mt-2">
-                            Member since {user?.updatedAt}
+                        <p className="text-gray-500 text-xs md:text-sm mt-3">
+                            Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                         </p>
                     </div>
 
-                    {/* Learning Preferences */}
-                    <div className="bg-white rounded-xl shadow p-6 mt-4">
-                        <h3 className="text-[#6657E2] font-semibold mb-3 text-lg">
-                            Learning Preferences
+                    {/* Teaching Preferences */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 md:p-6">
+                        <h3 className="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4">
+                            Teaching Preferences
                         </h3>
+                        <p className="text-gray-500 text-xs md:text-sm mb-3">Subjects</p>
+                        <div className="flex flex-wrap gap-2">
+                            {user?.teacher?.subjectsTaught?.map((item) => (
+                                <span
+                                    key={item}
+                                    className="px-2.5 py-1 md:px-3 md:py-1.5 font-medium text-xs rounded-full bg-purple-50 text-purple-700 border border-purple-100"
+                                >
+                                    {item}
+                                </span>
+                            )) || <span className="text-gray-500 text-sm">No subjects specified</span>}
+                        </div>
 
-                        <p className="text-[#7C7C7C] text-sm mb-2">Subjects</p>
+                        {/* Available Time Preview */}
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                            <p className="text-gray-500 text-xs md:text-sm mb-2">Available Hours</p>
+                            <p className="text-sm text-gray-700">
+                                {user?.teacher?.availableTime?.startTime && user?.teacher?.availableTime?.endTime
+                                    ? `${toInputTime(user.teacher.availableTime.startTime)} - ${toInputTime(user.teacher.availableTime.endTime)}`
+                                    : 'Not set'}
+                            </p>
+                        </div>
 
-                        {isEditing ? (
-                            <input
-                                type="text"
-                                name="subjectsTaught"
-                                value={formData.subjectsTaught}
-                                onChange={handleChange}
-                                className="w-full rounded-lg shadow bg-white border-gray-300 px-3 py-2 outline-none text-sm"
-                                placeholder="English, Math, Science (comma separated)"
-                            />
-                        ) : (
-                            <div className="flex flex-wrap gap-2">
-                                {user?.teacher.subjectsTaught?.map(
-                                    (item) => (
-                                        <span
-                                            key={item}
-                                            className="px-3 py-1 text-sm rounded-full bg-[#EBEBEB] border border-[#E3E3FF]
-                        bg-clip-text text-transparent [background-image:linear-gradient(90deg,#6657E2,#903CD1)]"
-                                        >
-                                            {item}
-                                        </span>
-                                    )
-                                ) || <span className="text-gray-500 text-sm">No subjects specified</span>}
-                            </div>
-                        )}
+                        {/* Hourly Rate Preview */}
+                        <div className="mt-3">
+                            <p className="text-gray-500 text-xs md:text-sm mb-1">Hourly Rate</p>
+                            <p className="text-sm text-gray-700 font-medium">
+                                ${user?.teacher?.hourlyRate || '0'}/hour
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* RIGHT SIDE FORM */}
-                <div className="flex-1 p-8">
-                    <div className="grid grid-cols-1 gap-6 w-full">
+                {/* RIGHT FORM */}
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 lg:p-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
 
                         {/* Name */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Name</label>
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Name</label>
                             {isEditing ? (
                                 <input
                                     type="text"
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Enter your name"
                                 />
                             ) : (
-                                <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
                                     {user?.name}
-                                </p>
+                                </div>
                             )}
                         </div>
 
                         {/* Email */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Email</label>
-                            <p className="flex-1 rounded-lg shadow bg-gray-50 border-gray-300 px-4 py-3 outline-none text-sm">
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Email</label>
+                            <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-600">
                                 {user?.email}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">Email cannot be changed</p>
                         </div>
 
                         {/* Phone */}
                         <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Phone Number</label>
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Phone Number</label>
                             <div className="flex gap-2">
-                                {isEditing ? (
-                                    <select
-                                        name="countryCode"
-                                        value={formData.countryCode}
-                                        onChange={handleChange}
-                                        className="px-4 rounded-lg text-sm text-white"
-                                        style={{
-                                            background: "linear-gradient(90deg, #6657E2, #903CD1)",
-                                            border: "1px solid rgba(255,255,255,0.4)",
-                                        }}
-                                    >
-                                        <option value="+1242">+880</option>
-                                        <option value="+1242">+1242</option>
-                                        <option value="+1">+1</option>
-                                        <option value="+44">+44</option>
-                                        <option value="+91">+91</option>
-                                    </select>
-                                ) : (
-                                    <button
-                                        className="px-4 flex items-center gap-2 rounded-lg text-sm text-white"
-                                        style={{
-                                            background: "linear-gradient(90deg, #6657E2, #903CD1)",
-                                            border: "1px solid rgba(255,255,255,0.4)",
-                                        }}
-                                    >
-                                        <img src={logo} className="w-5 h-5 rounded-sm" />
-                                        {user?.countryCode}
-                                        <FiChevronDown size={18} />
-                                    </button>
-                                )}
+                                <select
+                                    value={formData.countryCode}
+                                    onChange={(e) => isEditing && handleChange(e)}
+                                    name="countryCode"
+                                    disabled={!isEditing}
+                                    className="px-3 rounded-xl text-sm bg-gradient-to-r from-purple-600 to-purple-700 text-white border-0 outline-none cursor-pointer disabled:cursor-default min-w-[80px]"
+                                >
+                                    <option value="+880" className="text-gray-800 bg-white">🇧🇩 +880</option>
+                                    <option value="+1" className="text-gray-800 bg-white">🇺🇸 +1</option>
+                                    <option value="+44" className="text-gray-800 bg-white">🇬🇧 +44</option>
+                                    <option value="+91" className="text-gray-800 bg-white">🇮🇳 +91</option>
+                                    <option value="+1242" className="text-gray-800 bg-white">🇧🇸 +1242</option>
+                                </select>
+
                                 {isEditing ? (
                                     <input
                                         type="tel"
                                         name="phoneNumber"
                                         value={formData.phoneNumber}
                                         onChange={handleChange}
-                                        className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                        className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                        placeholder="Enter phone number"
                                     />
                                 ) : (
-                                    <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
-                                        {user?.phoneNumber}
-                                    </p>
+                                    <div className="flex-1 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                        {user?.phoneNumber || "Not provided"}
+                                    </div>
                                 )}
                             </div>
                         </div>
 
-                        {/* Bio */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Bio</label>
-                            {isEditing ? (
-                                <textarea
-                                    name="bio"
-                                    value={formData.bio}
-                                    onChange={handleChange}
-                                    className="w-full h-24 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm resize-none"
-                                    placeholder="Tell us about yourself..."
-                                />
-                            ) : (
-                                <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
-                                    {user?.bio}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* About Me / Content */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">About Me</label>
-                            {isEditing ? (
-                                <textarea
-                                    name="content"
-                                    value={formData.content}
-                                    onChange={handleChange}
-                                    className="w-full h-24 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm resize-none"
-                                    placeholder="More detailed introduction..."
-                                />
-                            ) : (
-                                <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
-                                    {user?.teacher?.content || 'No detailed content added.'}
-                                </p>
-                            )}
-                        </div>
-
                         {/* Hourly Rate */}
                         <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Hourly Rate</label>
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Hourly Rate ($)</label>
                             {isEditing ? (
                                 <input
                                     type="number"
                                     name="hourlyRate"
                                     value={formData.hourlyRate}
                                     onChange={handleChange}
-                                    className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Enter hourly rate"
                                     min="0"
-                                    step="1"
                                 />
                             ) : (
-                                <p className="flex-1 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
-                                    {user?.teacher?.hourlyRate}
-                                </p>
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                    ${user?.teacher?.hourlyRate || '0'} / hour
+                                </div>
                             )}
                         </div>
 
-                        {/* Qualification */}
-                        <div>
-                            <label className="block mb-1 text-gray-700 text-sm">Qualification</label>
+                        {/* Bio */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Bio</label>
+                            {isEditing ? (
+                                <textarea
+                                    name="bio"
+                                    value={formData.bio}
+                                    onChange={handleChange}
+                                    rows={3}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm resize-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Tell us about yourself..."
+                                />
+                            ) : (
+                                <div className={`w-full rounded-xl border border-gray-100 px-4 py-3 text-sm ${user?.bio ? 'text-gray-800 bg-gray-50' : 'text-gray-400 bg-gray-50 italic'}`}>
+                                    {user?.bio || "No bio added yet"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* About Me */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">About Me</label>
+                            {isEditing ? (
+                                <textarea
+                                    name="content"
+                                    value={formData.content}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm resize-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="More detailed introduction about your teaching experience..."
+                                />
+                            ) : (
+                                <div className={`w-full rounded-xl border border-gray-100 px-4 py-3 text-sm ${user?.teacher?.content ? 'text-gray-800 bg-gray-50' : 'text-gray-400 bg-gray-50 italic'}`}>
+                                    {user?.teacher?.content || "No detailed content added yet"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Subjects Taught */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Subjects Taught</label>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="subjectsTaught"
+                                    value={formData.subjectsTaught}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Math, English, Science (comma separated)"
+                                />
+                            ) : (
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800 min-h-[46px]">
+                                    {user?.teacher?.subjectsTaught?.join(', ') || "No subjects specified"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Available Time */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Available Time</label>
+                            {isEditing ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block mb-1 text-gray-500 text-xs">Start Time</label>
+                                        <input
+                                            type="time"
+                                            name="availableTime.startTime"
+                                            value={formData.availableTime.startTime}
+                                            onChange={handleChange}
+                                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block mb-1 text-gray-500 text-xs">End Time</label>
+                                        <input
+                                            type="time"
+                                            name="availableTime.endTime"
+                                            value={formData.availableTime.endTime}
+                                            onChange={handleChange}
+                                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                    {user?.teacher?.availableTime?.startTime && user?.teacher?.availableTime?.endTime
+                                        ? `${toInputTime(user.teacher.availableTime.startTime)} - ${toInputTime(user.teacher.availableTime.endTime)}`
+                                        : "Not set"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Available Days */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Available Days</label>
+                            {isEditing ? (
+                                <input
+                                    type="text"
+                                    name="availableDays"
+                                    value={formData.availableDays}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
+                                    placeholder="Monday, Tuesday, Wednesday (comma separated)"
+                                />
+                            ) : (
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                    {user?.teacher?.availableDays?.join(', ') || "No days specified"}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Qualifications */}
+                        <div className="md:col-span-2">
+                            <label className="block mb-1.5 text-gray-700 text-sm font-medium">Qualifications</label>
                             {isEditing ? (
                                 <textarea
                                     name="qualification"
                                     value={formData.qualification}
                                     onChange={handleChange}
-                                    className="w-full h-28 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm resize-none"
+                                    rows={4}
+                                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 outline-none text-sm resize-none focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all"
                                     placeholder="B.Sc. in Mathematics - Dhaka University (2014)&#10;M.Sc. in Applied Math - Dhaka University (2016)"
                                 />
                             ) : (
-                                <div className="flex flex-col gap-2 rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm">
-                                    {user?.teacher?.qualification?.map((item, index) => (
-                                        <span key={item.id || index}>
-                                            {item.title} - {item.institution} ({item.year})
-                                            {index < user?.teacher?.qualification?.length - 1 && ", "}
-                                        </span>
-                                    ))}
+                                <div className="w-full rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm text-gray-800">
+                                    {user?.teacher?.qualification?.length > 0 ? (
+                                        <ul className="list-disc list-inside space-y-1">
+                                            {user.teacher.qualification.map((q, i) => (
+                                                <li key={i}>{q.title} - {q.institution} ({q.year})</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <span className="text-gray-400 italic">No qualifications added</span>
+                                    )}
                                 </div>
                             )}
                         </div>
-
-                        <h3 className=" font-semibold text-[#7C7C7C]">Available time and date</h3>
-
-                        <div className=" flex flex-col gap-2">
-                            {isEditing ? (
-                                <>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block mb-1 text-gray-700 text-sm">Start Time</label>
-                                            <input
-                                                type="time"
-                                                name="availableTime.startTime"
-                                                value={formData.availableTime.startTime}
-                                                onChange={handleChange}
-                                                className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block mb-1 text-gray-700 text-sm">End Time</label>
-                                            <input
-                                                type="time"
-                                                name="availableTime.endTime"
-                                                value={formData.availableTime.endTime}
-                                                onChange={handleChange}
-                                                className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block mb-1 text-gray-700 text-sm">Available Days</label>
-                                        <input
-                                            type="text"
-                                            name="availableDays"
-                                            value={formData.availableDays}
-                                            onChange={handleChange}
-                                            className="w-full rounded-lg shadow bg-white border-gray-300 px-4 py-3 outline-none text-sm"
-                                            placeholder="Monday, Tuesday, Wednesday (comma separated)"
-                                        />
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="px-4 py-2 text-sm text-[#7C7C7C] shadow bg-white rounded-lg inline-block w-fit">
-                                        {user?.teacher.availableTime.startTime} to {user?.teacher.availableTime.endTime}
-                                    </span>
-
-                                    <span className="px-4 py-2 text-sm text-[#7C7C7C] shadow bg-white rounded-lg inline-block w-fit">
-                                        {
-                                            user?.teacher?.availableDays?.map(item => item).join(', ') || 'No days specified'
-                                        }
-                                    </span>
-                                </>
-                            )}
-                        </div>
-                        {/* Certificates/Documents */}
-                        <div className="w-full bg-white p-5 rounded-lg shadow mt-10">
-                            <h3 className="font-semibold text-[#7C7C7C] mb-4">Certificates & Documents</h3>
-                            <div className="space-y-3">
-                                {user?.teacher?.certificates?.map((cert, index) => (
-                                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                                        <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                                            <span className="text-red-600 font-semibold text-sm">PDF</span>
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-800">
-                                                {cert.split('/').pop()} {/* Extract filename from path */}
-                                            </p>
-                                            <p className="text-xs text-gray-500">Certificate</p>
-                                        </div>
-                                        <button
-                                            onClick={() => window.open(cert, '_blank')}
-                                            className="px-3 py-1 bg-[#6657E2] text-white text-xs rounded hover:bg-[#5a47d0] transition"
-                                        >
-                                            View
-                                        </button>
-                                    </div>
-                                )) || (
-                                        <p className="text-gray-500 text-sm">No certificates uploaded</p>
-                                    )}
-                            </div>
-                        </div>
                     </div>
 
-                    {/* Edit/Save/Cancel Buttons */}
-                    <div className="w-full flex justify-end gap-3">
+                    {/* Action Buttons */}
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6 md:mt-8">
                         {isEditing ? (
                             <>
-                                {!isSaving && (
-                                    <button
-                                        onClick={handleCancel}
-                                        className="mt-8 border border-gray-300 text-gray-700 px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md hover:bg-gray-50"
-                                    >
-                                        <FaTimes size="20" />
-                                        Cancel
-                                    </button>
-                                )}
+                                <button
+                                    onClick={handleCancel}
+                                    disabled={isSaving}
+                                    className="px-5 py-2.5 md:px-6 md:py-3 border border-gray-200 text-gray-700 rounded-xl flex items-center justify-center gap-2 text-sm font-medium hover:bg-gray-50 transition-colors"
+                                >
+                                    <FaTimes size={18} />
+                                    Cancel
+                                </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={isSaving}
-                                    className={`mt-8 px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md text-white ${isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-linear-to-r from-[#6657E2] to-[#903CD1] hover:opacity-90'}`}
+                                    className={`px-5 py-2.5 md:px-6 md:py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-medium text-white transition-all ${isSaving ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 hover:shadow-lg'}`}
                                 >
-                                    {isSaving ? <Spinner size="small" showText={false} fullScreen={false} className="text-white" /> : <FaSave size="20" />}
+                                    {isSaving ? <Spinner size="small" showText={false} fullScreen={false} className="text-white" /> : <FaSave size={18} />}
                                     {isSaving ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </>
                         ) : (
                             <button
                                 onClick={handleEdit}
-                                className="mt-8 bg-linear-to-r from-[#6657E2] to-[#903CD1] hover:opacity-90 text-white px-6 py-3 rounded-lg flex items-center gap-2 text-sm font-medium shadow-md"
+                                className="px-5 py-2.5 md:px-6 md:py-3 bg-gradient-to-r from-purple-600 to-purple-700 hover:opacity-90 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all hover:shadow-lg"
                             >
-                                <FaRegEdit size="20" />
+                                <FaRegEdit size={18} />
                                 Edit Profile
                             </button>
                         )}

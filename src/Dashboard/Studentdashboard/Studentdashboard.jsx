@@ -107,7 +107,7 @@ const Studentdashboard = () => {
 
             {/* ================= SIDEBAR ================= */}
             <div className={`fixed lg:static inset-y-0 left-0 z-50 h-full shrink-0 bg-white lg:bg-transparent transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
-                <div className="w-[280px] lg:w-[290px] min-h-full bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-4 lg:px-6 py-6 lg:py-8 lg:m-5 lg:rounded-2xl lg:h-auto">
+                <div className="w-[280px] lg:w-[290px] min-h-full bg-gradient-to-r from-[#6657E2] to-[#903CD1] text-white px-4 lg:px-6 py-6 lg:py-8 lg:my-5 lg:ml-5 lg:rounded-2xl lg:h-auto">
 
                     {/* Close button for mobile */}
                     <div className="flex justify-between items-center mb-4 lg:hidden">

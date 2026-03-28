@@ -95,50 +95,47 @@ export default function ToutorMyLessonsPage() {
     const currentStatusStyle = statusStyles[status] || statusStyles.default;
 
     return (
-      <div className="w-full bg-white rounded-lg p-6 shadow-[0_2px_6px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-6 border border-gray-100">
+      <div className="w-full bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-start md:items-center gap-4">
         <img
           src={studentAvatar}
           alt="profile"
-          className="w-[60px] h-[60px] rounded-full object-cover shrink-0 border-2 border-purple-100"
+          className="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover shrink-0 border-2 border-purple-100"
         />
 
         <div className="flex-1 w-full">
-          <div className="flex items-center w-full justify-between mb-2">
+          <div className="flex flex-col md:flex-row md:items-center w-full justify-between mb-2 gap-2">
             <div className="flex items-center gap-2">
-              <h2 className="text-[17px] font-bold text-gray-800">{studentName}</h2>
+              <h2 className="text-base md:text-lg font-bold text-gray-800">{studentName}</h2>
               <span className={`w-2.5 h-2.5 rounded-full ${isOnline(data.student?._id) ? "bg-green-500" : "bg-gray-300"}`}></span>
             </div>
-            <span className={`text-[11px] px-3 py-1 rounded-full whitespace-nowrap font-semibold uppercase tracking-wider ${currentStatusStyle}`}>
+            <span className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-semibold uppercase tracking-wider ${currentStatusStyle}`}>
               {status}
             </span>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="grid grid-cols-1 gap-1">
-              <p className="text-gray-600 text-[14px]">
-                <span className="font-semibold text-gray-700">Subject:</span> {subject}
+              <p className="text-gray-600 text-sm">
+                <span className="font-medium text-gray-700">Subject:</span> {subject}
               </p>
-              <div className="flex items-center gap-4 text-gray-500 text-[13px]">
-                <div className="flex items-center gap-2">
-                  <FiCalendar className="text-purple-500" /> {formattedDate}
+              <div className="flex flex-wrap items-center gap-3 text-gray-500 text-sm">
+                <div className="flex items-center gap-1.5">
+                  <FiCalendar className="text-purple-500" size={16} /> {formattedDate}
                 </div>
-                <div className="flex items-center gap-2">
-                  <FiClock className="text-purple-500" /> {timeRange}
+                <div className="flex items-center gap-1.5">
+                  <FiClock className="text-purple-500" size={16} /> {timeRange}
                 </div>
               </div>
             </div>
 
-            {/* Only show Cancel button if the lesson is still 'scheduled' */}
             {status === "scheduled" && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setCancelModal({ show: true, bookingId: _id })}
-                  className="flex items-center gap-1 bg-white border border-red-200 text-red-600 px-4 py-2 rounded-md text-xs font-medium hover:bg-red-50 transition-colors"
-                >
-                  <FiSlash size={14} />
-                  Cancel Lesson
-                </button>
-              </div>
+              <button
+                onClick={() => setCancelModal({ show: true, bookingId: _id })}
+                className="flex items-center justify-center gap-1.5 bg-white border border-red-200 text-red-600 px-4 py-2 rounded-lg text-xs font-medium hover:bg-red-50 transition-colors w-full md:w-auto"
+              >
+                <FiSlash size={14} />
+                Cancel Lesson
+              </button>
             )}
           </div>
         </div>
@@ -157,14 +154,16 @@ export default function ToutorMyLessonsPage() {
   }
 
   return (
-    <div className="bg-[#F5FAF7] min-h-screen p-4 md:p-8 relative">
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="text-[20px] font-semibold text-[#6B46C1]">My Lessons</h1>
+    <div className="space-y-4 md:space-y-6 px-4 md:px-0">
+      {/* Header */}
+      <div>
+        <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          My Lessons
+        </h2>
+        <p className="text-gray-500 text-sm mt-1">
+          View and manage your teaching schedule.
+        </p>
       </div>
-
-      <p className="text-gray-500 mb-6 text-[13px]">
-        View and manage your teaching schedule.
-      </p>
 
       <div className="flex flex-col gap-4">
         {lessonData?.length > 0 ? (
@@ -172,29 +171,33 @@ export default function ToutorMyLessonsPage() {
             <LessonCard key={data._id || data.id} data={data} />
           ))
         ) : (
-          <div className="text-center py-20 bg-white rounded-lg shadow-sm">
-            <p className="text-gray-500 italic">No lessons found in your schedule.</p>
+          <div className="text-center py-16 md:py-20 bg-white rounded-2xl shadow-sm border border-gray-100">
+            <div className="mb-4 p-4 bg-gray-50 rounded-full inline-flex">
+              <FiCalendar className="w-12 h-12 text-gray-300" />
+            </div>
+            <p className="text-gray-600 font-medium">No lessons found in your schedule.</p>
+            <p className="text-sm text-gray-400 mt-1">Your schedule is currently empty.</p>
           </div>
         )}
       </div>
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="mt-6 md:mt-8 flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Back
+            Previous
           </button>
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 font-medium">
             Page {currentPage} of {totalPages}
           </div>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
           </button>
@@ -204,12 +207,12 @@ export default function ToutorMyLessonsPage() {
       {/* Cancellation Modal */}
       {cancelModal.show && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
               <h3 className="text-lg font-bold text-gray-800">Cancel Lesson</h3>
               <button
                 onClick={() => setCancelModal({ show: false, bookingId: null })}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 p-1 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <FiX size={20} />
               </button>
@@ -219,7 +222,7 @@ export default function ToutorMyLessonsPage() {
                 Reason for cancellation
               </label>
               <textarea
-                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+                className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all resize-none"
                 rows="4"
                 placeholder="Explain to the student why you need to cancel..."
                 value={cancelReason}
@@ -230,7 +233,7 @@ export default function ToutorMyLessonsPage() {
               <button
                 disabled={isSubmitting}
                 onClick={() => setCancelModal({ show: false, bookingId: null })}
-                className="px-4 py-2 text-sm font-semibold text-gray-600"
+                className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 Close
               </button>
